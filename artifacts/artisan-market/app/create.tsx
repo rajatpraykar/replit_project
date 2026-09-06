@@ -1,20 +1,24 @@
 import * as ImagePicker from 'expo-image-picker';
+import { File } from 'expo-file-system';
+import { RecordingPresets, requestRecordingPermissionsAsync, useAudioRecorder } from 'expo-audio';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
-import { useArtisan } from '@/context/ArtisanContext';
+import { AppLanguage, useArtisan } from '@/context/ArtisanContext';
 
 const sampleTextile = require('@/assets/images/indigo-textile.jpg');
+const languageLabels: Record<AppLanguage, string> = { en: 'English', hi: 'हिन्दी', mr: 'मराठी', bn: 'বাংলা' };
 
 export default function CreateScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ mode?: string }>();
-  const { addProduct } = useArtisan();
+  const { addProduct, language, setLanguage } = useArtisan();
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [step, setStep] = useState<1 | 2>(1);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageSource, setImageSource] = useState<any>(sampleTextile);
@@ -22,6 +26,9 @@ export default function CreateScreen() {
   const [material, setMaterial] = useState('Cotton · Natural indigo');
   const [voiceCaptured, setVoiceCaptured] = useState(params.mode === 'voice');
   const [recording, setRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [description, setDescription] = useState('A soft, naturally dyed dupatta woven by hand in small batches. Each piece carries the gentle irregularity and story of the loom.');
   const [hindiDescription, setHindiDescription] = useState('छोटे बैच में हाथ से बुना हुआ नरम दुपट्टा। हर टुकड़े में करघे की खूबसूरत पहचान और कारीगर की कहानी है।');
@@ -42,11 +49,41 @@ export default function CreateScreen() {
     }
   };
 
-  const toggleRecording = () => {
-    if (recording) {
-      setRecording(false);
+  const transcribe = async (uri: string) => {
+    setIsTranscribing(true);
+    try {
+      const audioBase64 = await new File(uri).base64();
+      const baseUrl = process.env.EXPO_PUBLIC_DOMAIN ? `https://${process.env.EXPO_PUBLIC_DOMAIN}` : '';
+      const response = await fetch(`${baseUrl}/api/transcribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audioBase64, mimeType: 'audio/m4a', language }),
+      });
+      const payload = (await response.json()) as { text?: string; message?: string };
+      if (!response.ok || !payload.text) throw new Error(payload.message ?? 'Transcription failed');
+      setVoiceTranscript(payload.text);
+      setDescription((current) => current ? `${current} ${payload.text}` : payload.text ?? '');
       setVoiceCaptured(true);
+    } catch (error) {
+      Alert.alert('Could not transcribe', error instanceof Error ? error.message : 'Please try recording again.');
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (recording) {
+      await recorder.stop();
+      setRecording(false);
+      if (recorder.uri) await transcribe(recorder.uri);
     } else {
+      const permission = await requestRecordingPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Microphone permission needed', 'Allow microphone access so your words can become a product description.');
+        return;
+      }
+      await recorder.prepareToRecordAsync();
+      recorder.record();
       setRecording(true);
     }
   };
@@ -74,7 +111,9 @@ export default function CreateScreen() {
             <View style={styles.heading}><Text style={[styles.eyebrow, { color: colors.primary }]}>NEW LISTING</Text><Text style={[styles.title, { color: colors.foreground }]}>Show us your craft.</Text><Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Start with one photo and a few words. We’ll help shape the rest.</Text></View>
             <View style={[styles.photoPanel, { backgroundColor: colors.secondary }]}><Image source={imageSource} style={styles.previewImage} /><View style={styles.photoBadge}><Ionicons name="sparkles" size={12} color={colors.primary} /><Text style={[styles.photoBadgeText, { color: colors.primary }]}>AI studio ready</Text></View><View style={styles.photoActions}><Pressable testID="camera-button" style={[styles.photoAction, { backgroundColor: colors.primary }]} onPress={() => chooseImage(true)}><Ionicons name="camera-outline" size={18} color={colors.primaryForeground} /><Text style={[styles.photoActionText, { color: colors.primaryForeground }]}>Camera</Text></Pressable><Pressable style={[styles.photoAction, { backgroundColor: colors.card }]} onPress={() => chooseImage(false)}><Ionicons name="images-outline" size={18} color={colors.foreground} /><Text style={[styles.photoActionText, { color: colors.foreground }]}>Gallery</Text></Pressable></View></View>
             <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Tell us about it</Text>
-            <View style={[styles.voiceBox, { backgroundColor: colors.card, borderColor: voiceCaptured ? colors.sage : colors.border }]}><Pressable style={[styles.micButton, { backgroundColor: recording ? colors.primary : colors.secondary }]} onPress={toggleRecording}><Ionicons name={recording ? 'stop' : 'mic-outline'} size={20} color={recording ? colors.primaryForeground : colors.primary} /></Pressable><View style={{ flex: 1 }}><Text style={[styles.voiceTitle, { color: colors.foreground }]}>{recording ? 'Listening… tap to stop' : voiceCaptured ? 'Voice note captured' : 'Speak in your language'}</Text><Text style={[styles.voiceText, { color: colors.mutedForeground }]}>{voiceCaptured ? '“नीले रंग का हाथ से बुना हुआ दुपट्टा…”' : 'Tap the mic and describe your product'}</Text></View>{voiceCaptured && <Ionicons name="checkmark-circle" size={21} color={colors.success} />}</View>
+            <View style={styles.voiceSettingsRow}><Text style={[styles.voiceSettingsLabel, { color: colors.mutedForeground }]}>Voice language</Text><Pressable style={[styles.languageButton, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => setShowLanguageMenu((open) => !open)}><Ionicons name="language-outline" size={15} color={colors.primary} /><Text style={[styles.languageButtonText, { color: colors.foreground }]}>{languageLabels[language]}</Text><Feather name="chevron-down" size={15} color={colors.mutedForeground} /></Pressable></View>
+            {showLanguageMenu && <View style={[styles.languageMenu, { backgroundColor: colors.card, borderColor: colors.border }]}>{(Object.keys(languageLabels) as AppLanguage[]).map((option) => <Pressable key={option} style={styles.languageOption} onPress={() => { void setLanguage(option); setShowLanguageMenu(false); }}><Text style={[styles.languageOptionText, { color: option === language ? colors.primary : colors.foreground }]}>{languageLabels[option]}</Text>{option === language && <Ionicons name="checkmark" size={16} color={colors.primary} />}</Pressable>)}</View>}
+            <View style={[styles.voiceBox, { backgroundColor: colors.card, borderColor: voiceCaptured ? colors.sage : colors.border }]}><Pressable style={[styles.micButton, { backgroundColor: recording ? colors.primary : colors.secondary }]} onPress={() => { void toggleRecording(); }} disabled={isTranscribing}><Ionicons name={isTranscribing ? 'hourglass-outline' : recording ? 'stop' : 'mic-outline'} size={20} color={recording ? colors.primaryForeground : colors.primary} /></Pressable><View style={{ flex: 1 }}><Text style={[styles.voiceTitle, { color: colors.foreground }]}>{isTranscribing ? 'Transcribing your words…' : recording ? 'Listening… tap to stop' : voiceCaptured ? 'Voice text added to description' : 'Speak in your language'}</Text><Text style={[styles.voiceText, { color: colors.mutedForeground }]}>{voiceTranscript || 'Tap the mic and describe your product'}</Text></View>{voiceCaptured && !isTranscribing && <Ionicons name="checkmark-circle" size={21} color={colors.success} />}</View>
             <View style={styles.orRow}><View style={[styles.orLine, { backgroundColor: colors.border }]} /><Text style={[styles.orText, { color: colors.mutedForeground }]}>or type a few details</Text><View style={[styles.orLine, { backgroundColor: colors.border }]} /></View>
             <TextInput value={name} onChangeText={setName} placeholder="Product name" placeholderTextColor={colors.mutedForeground} style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} />
             <TextInput value={material} onChangeText={setMaterial} placeholder="Material or craft" placeholderTextColor={colors.mutedForeground} style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border }]} />
@@ -99,5 +138,5 @@ export default function CreateScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 }, content: { paddingHorizontal: 20, gap: 15 }, topbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }, iconButton: { width: 38, height: 38, justifyContent: 'center', alignItems: 'center' }, stepper: { flexDirection: 'row', alignItems: 'center' }, stepDot: { width: 8, height: 8, borderRadius: 4 }, stepLine: { width: 52, height: 2 }, heading: { gap: 8, marginTop: 4, marginBottom: 5 }, eyebrow: { fontSize: 11, letterSpacing: 1.5, fontFamily: 'Inter_700Bold' }, title: { fontSize: 29, lineHeight: 34, fontFamily: 'Inter_700Bold' }, subtitle: { fontSize: 13, lineHeight: 19, fontFamily: 'Inter_400Regular', maxWidth: 315 }, photoPanel: { borderRadius: 22, padding: 10, marginTop: 3 }, previewImage: { width: '100%', height: 218, borderRadius: 16 }, photoBadge: { position: 'absolute', left: 22, top: 22, backgroundColor: '#fffdf9', borderRadius: 12, paddingVertical: 7, paddingHorizontal: 9, flexDirection: 'row', gap: 5, alignItems: 'center' }, photoBadgeText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, photoActions: { flexDirection: 'row', gap: 8, marginTop: 9 }, photoAction: { flex: 1, borderRadius: 13, minHeight: 42, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 7 }, photoActionText: { fontSize: 12, fontFamily: 'Inter_700Bold' }, fieldLabel: { fontSize: 13, fontFamily: 'Inter_700Bold', marginTop: 3 }, voiceBox: { minHeight: 68, borderWidth: 1, borderRadius: 17, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 11 }, micButton: { width: 44, height: 44, borderRadius: 15, justifyContent: 'center', alignItems: 'center' }, voiceTitle: { fontSize: 12, fontFamily: 'Inter_700Bold' }, voiceText: { fontSize: 10, fontFamily: 'Inter_400Regular', marginTop: 5 }, orRow: { flexDirection: 'row', alignItems: 'center', gap: 8 }, orLine: { height: 1, flex: 1 }, orText: { fontSize: 10, fontFamily: 'Inter_400Regular' }, input: { height: 48, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, fontSize: 13, fontFamily: 'Inter_500Medium' }, primaryButton: { minHeight: 52, borderRadius: 17, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 9, marginTop: 5 }, primaryButtonText: { fontSize: 13, fontFamily: 'Inter_700Bold' }, resultCard: { borderWidth: 1, borderRadius: 19, overflow: 'hidden' }, resultImage: { width: '100%', height: 190 }, resultBody: { padding: 14 }, aiPill: { flexDirection: 'row', alignItems: 'center', gap: 5 }, aiPillText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, resultName: { fontSize: 17, fontFamily: 'Inter_700Bold', marginTop: 9 }, resultMaterial: { fontSize: 11, fontFamily: 'Inter_400Regular', marginTop: 4 }, textarea: { minHeight: 92, borderWidth: 1, borderRadius: 15, padding: 13, fontSize: 12, lineHeight: 18, fontFamily: 'Inter_400Regular', textAlignVertical: 'top' }, priceHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }, recommended: { flexDirection: 'row', alignItems: 'center', gap: 4 }, recommendedText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, priceBox: { minHeight: 65, borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 7 }, rupee: { fontSize: 24, fontFamily: 'Inter_700Bold' }, priceInput: { fontSize: 25, fontFamily: 'Inter_700Bold', flex: 1 }, priceHint: { borderRadius: 10, paddingVertical: 7, paddingHorizontal: 8, maxWidth: 125 }, priceHintText: { fontSize: 9, lineHeight: 12, fontFamily: 'Inter_600SemiBold' }, costLabel: { fontSize: 10, fontFamily: 'Inter_600SemiBold', marginTop: -2 }, costRow: { minHeight: 39, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }, costText: { fontSize: 15, fontFamily: 'Inter_700Bold' }, costInput: { width: 70, fontSize: 14, fontFamily: 'Inter_700Bold' }, costHelper: { fontSize: 9, fontFamily: 'Inter_400Regular', flex: 1 }, backToEdit: { alignItems: 'center', paddingVertical: 5 }, backToEditText: { fontSize: 12, fontFamily: 'Inter_700Bold' },
+  screen: { flex: 1 }, content: { paddingHorizontal: 20, gap: 15 }, topbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }, iconButton: { width: 38, height: 38, justifyContent: 'center', alignItems: 'center' }, stepper: { flexDirection: 'row', alignItems: 'center' }, stepDot: { width: 8, height: 8, borderRadius: 4 }, stepLine: { width: 52, height: 2 }, heading: { gap: 8, marginTop: 4, marginBottom: 5 }, eyebrow: { fontSize: 11, letterSpacing: 1.5, fontFamily: 'Inter_700Bold' }, title: { fontSize: 29, lineHeight: 34, fontFamily: 'Inter_700Bold' }, subtitle: { fontSize: 13, lineHeight: 19, fontFamily: 'Inter_400Regular', maxWidth: 315 }, photoPanel: { borderRadius: 22, padding: 10, marginTop: 3 }, previewImage: { width: '100%', height: 218, borderRadius: 16 }, photoBadge: { position: 'absolute', left: 22, top: 22, backgroundColor: '#fffdf9', borderRadius: 12, paddingVertical: 7, paddingHorizontal: 9, flexDirection: 'row', gap: 5, alignItems: 'center' }, photoBadgeText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, photoActions: { flexDirection: 'row', gap: 8, marginTop: 9 }, photoAction: { flex: 1, borderRadius: 13, minHeight: 42, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 7 }, photoActionText: { fontSize: 12, fontFamily: 'Inter_700Bold' }, fieldLabel: { fontSize: 13, fontFamily: 'Inter_700Bold', marginTop: 3 }, voiceSettingsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, voiceSettingsLabel: { fontSize: 10, fontFamily: 'Inter_600SemiBold' }, languageButton: { borderWidth: 1, borderRadius: 12, paddingVertical: 7, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', gap: 5 }, languageButtonText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, languageMenu: { borderWidth: 1, borderRadius: 14, overflow: 'hidden', marginTop: -7 }, languageOption: { minHeight: 39, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eee5d9' }, languageOptionText: { fontSize: 11, fontFamily: 'Inter_600SemiBold' }, voiceBox: { minHeight: 68, borderWidth: 1, borderRadius: 17, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 11 }, micButton: { width: 44, height: 44, borderRadius: 15, justifyContent: 'center', alignItems: 'center' }, voiceTitle: { fontSize: 12, fontFamily: 'Inter_700Bold' }, voiceText: { fontSize: 10, fontFamily: 'Inter_400Regular', marginTop: 5 }, orRow: { flexDirection: 'row', alignItems: 'center', gap: 8 }, orLine: { height: 1, flex: 1 }, orText: { fontSize: 10, fontFamily: 'Inter_400Regular' }, input: { height: 48, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, fontSize: 13, fontFamily: 'Inter_500Medium' }, primaryButton: { minHeight: 52, borderRadius: 17, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 9, marginTop: 5 }, primaryButtonText: { fontSize: 13, fontFamily: 'Inter_700Bold' }, resultCard: { borderWidth: 1, borderRadius: 19, overflow: 'hidden' }, resultImage: { width: '100%', height: 190 }, resultBody: { padding: 14 }, aiPill: { flexDirection: 'row', alignItems: 'center', gap: 5 }, aiPillText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, resultName: { fontSize: 17, fontFamily: 'Inter_700Bold', marginTop: 9 }, resultMaterial: { fontSize: 11, fontFamily: 'Inter_400Regular', marginTop: 4 }, textarea: { minHeight: 92, borderWidth: 1, borderRadius: 15, padding: 13, fontSize: 12, lineHeight: 18, fontFamily: 'Inter_400Regular', textAlignVertical: 'top' }, priceHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }, recommended: { flexDirection: 'row', alignItems: 'center', gap: 4 }, recommendedText: { fontSize: 10, fontFamily: 'Inter_700Bold' }, priceBox: { minHeight: 65, borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 7 }, rupee: { fontSize: 24, fontFamily: 'Inter_700Bold' }, priceInput: { fontSize: 25, fontFamily: 'Inter_700Bold', flex: 1 }, priceHint: { borderRadius: 10, paddingVertical: 7, paddingHorizontal: 8, maxWidth: 125 }, priceHintText: { fontSize: 9, lineHeight: 12, fontFamily: 'Inter_600SemiBold' }, costLabel: { fontSize: 10, fontFamily: 'Inter_600SemiBold', marginTop: -2 }, costRow: { minHeight: 39, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }, costText: { fontSize: 15, fontFamily: 'Inter_700Bold' }, costInput: { width: 70, fontSize: 14, fontFamily: 'Inter_700Bold' }, costHelper: { fontSize: 9, fontFamily: 'Inter_400Regular', flex: 1 }, backToEdit: { alignItems: 'center', paddingVertical: 5 }, backToEditText: { fontSize: 12, fontFamily: 'Inter_700Bold' },
 });

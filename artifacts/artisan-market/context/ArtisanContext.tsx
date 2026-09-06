@@ -20,7 +20,11 @@ type ArtisanContextValue = {
   products: Product[];
   addProduct: (product: Omit<Product, 'id' | 'createdAt'>) => Promise<Product>;
   getProduct: (id: string) => Product | undefined;
+  language: AppLanguage;
+  setLanguage: (language: AppLanguage) => Promise<void>;
 };
+
+export type AppLanguage = 'en' | 'hi' | 'mr' | 'bn';
 
 const textile = require('@/assets/images/indigo-textile.jpg') as ImageSourcePropType;
 const diya = require('@/assets/images/terracotta-diya.jpg') as ImageSourcePropType;
@@ -56,6 +60,7 @@ const ArtisanContext = createContext<ArtisanContextValue | null>(null);
 
 export function ArtisanProvider({ children }: PropsWithChildren) {
   const [products, setProducts] = useState<Product[]>(starterProducts);
+  const [language, setLanguageState] = useState<AppLanguage>('en');
 
   useEffect(() => {
     AsyncStorage.getItem('artisan-market-products').then((stored) => {
@@ -65,6 +70,14 @@ export function ArtisanProvider({ children }: PropsWithChildren) {
         setProducts([...saved, ...starterProducts]);
       } catch {
         setProducts(starterProducts);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem('artisan-market-language').then((stored) => {
+      if (stored === 'en' || stored === 'hi' || stored === 'mr' || stored === 'bn') {
+        setLanguageState(stored);
       }
     });
   }, []);
@@ -81,13 +94,20 @@ export function ArtisanProvider({ children }: PropsWithChildren) {
     return created;
   };
 
+  const setLanguage = async (nextLanguage: AppLanguage) => {
+    setLanguageState(nextLanguage);
+    await AsyncStorage.setItem('artisan-market-language', nextLanguage);
+  };
+
   const value = useMemo(
     () => ({
       products,
       addProduct,
       getProduct: (id: string) => products.find((product) => product.id === id),
+      language,
+      setLanguage,
     }),
-    [products],
+    [language, products],
   );
 
   return <ArtisanContext.Provider value={value}>{children}</ArtisanContext.Provider>;
