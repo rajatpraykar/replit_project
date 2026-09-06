@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/"
+title = "Artisan Market"
+description = "An AI-assisted mobile business companion for marginalized artisans and weavers. It helps users photograph products, generate multilingual catalog listings from voice or text, improve product presentation, and get practical pricing guidance for year-round digital commerce."
+version = "1.0.0"
+id = "artifacts/artisan-market"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/" ]
+localPort = 25974
+
+[services.development]
+run = "pnpm --filter @workspace/artisan-market run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/artisan-market", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/artisan-market", "run", "serve" ]
+
+[services.env]
+PORT = "25974"
+BASE_PATH = "/"
