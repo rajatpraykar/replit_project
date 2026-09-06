@@ -1,4 +1,5 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ const languageLabels: Record<AppLanguage, string> = { en: 'English', hi: 'हि
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { language, setLanguage } = useArtisan();
   const [hindi, setHindi] = useState(true);
   const [tips, setTips] = useState(true);
@@ -29,7 +31,7 @@ export default function ProfileScreen() {
         <View style={[styles.preferenceCard, { backgroundColor: colors.card, borderColor: colors.border }]}><View style={[styles.prefIcon, { backgroundColor: colors.secondary }]}><Ionicons name="language-outline" size={18} color={colors.primary} /></View><View style={{ flex: 1 }}><Text style={[styles.prefTitle, { color: colors.foreground }]}>Hindi assistance</Text><Text style={[styles.prefText, { color: colors.mutedForeground }]}>Use Hindi for AI suggestions and tips</Text></View><Switch value={hindi} onValueChange={setHindi} trackColor={{ false: colors.muted, true: colors.primary }} thumbColor={colors.card} /></View>
         <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>PREFERENCES</Text>
         <View style={[styles.preferenceCard, { backgroundColor: colors.card, borderColor: colors.border }]}><View style={[styles.prefIcon, { backgroundColor: '#e9efe6' }]}><Ionicons name="bulb-outline" size={18} color={colors.sage} /></View><View style={{ flex: 1 }}><Text style={[styles.prefTitle, { color: colors.foreground }]}>Helpful tips</Text><Text style={[styles.prefText, { color: colors.mutedForeground }]}>Small ideas to grow your online business</Text></View><Switch value={tips} onValueChange={setTips} trackColor={{ false: colors.muted, true: colors.sage }} thumbColor={colors.card} /></View>
-        <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>{[{ icon: 'help-circle', label: 'How Artisan Market works' }, { icon: 'shield', label: 'Privacy & your data' }, { icon: 'message-circle', label: 'Get help' }].map((item, index) => <Pressable key={item.label} style={[styles.menuRow, index < 2 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}><Feather name={item.icon as 'help-circle'} size={17} color={colors.mutedForeground} /><Text style={[styles.menuLabel, { color: colors.foreground }]}>{item.label}</Text><Feather name="chevron-right" size={17} color={colors.mutedForeground} /></Pressable>)}</View>
+        <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>{[{ icon: 'file-text', label: 'Receipts & downloads', action: () => router.push('/receipts') }, { icon: 'help-circle', label: 'How Artisan Market works' }, { icon: 'shield', label: 'Privacy & your data' }, { icon: 'message-circle', label: 'Get help' }].map((item, index) => <Pressable key={item.label} onPress={item.action} style={[styles.menuRow, index < 3 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}><Feather name={item.icon as 'help-circle'} size={17} color={colors.mutedForeground} /><Text style={[styles.menuLabel, { color: colors.foreground }]}>{item.label}</Text><Feather name="chevron-right" size={17} color={colors.mutedForeground} /></Pressable>)}</View>
         <Text style={[styles.version, { color: colors.mutedForeground }]}>Artisan Market · Built for makers, with care</Text>
       </ScrollView>
     </View>

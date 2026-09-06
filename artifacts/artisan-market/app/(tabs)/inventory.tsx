@@ -10,7 +10,8 @@ export default function InventoryScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { products } = useArtisan();
+  const { products, language } = useArtisan();
+  const hi = language === 'hi';
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All items');
   const filtered = useMemo(() => products.filter((product) => {
@@ -22,26 +23,26 @@ export default function InventoryScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 30 }]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View><Text style={[styles.eyebrow, { color: colors.primary }]}>MY CATALOG</Text><Text style={[styles.title, { color: colors.foreground }]}>Your products</Text></View>
+          <View><Text style={[styles.eyebrow, { color: colors.primary }]}>{hi ? 'मेरा कैटलॉग' : 'MY CATALOG'}</Text><Text style={[styles.title, { color: colors.foreground }]}>{hi ? 'आपके उत्पाद' : 'Your products'}</Text></View>
           <Pressable testID="add-product" style={[styles.addButton, { backgroundColor: colors.primary }]} onPress={() => router.push('/create')}><Feather name="plus" size={20} color={colors.primaryForeground} /></Pressable>
         </View>
         <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="search" size={17} color={colors.mutedForeground} />
-          <TextInput value={search} onChangeText={setSearch} placeholder="Search your products" placeholderTextColor={colors.mutedForeground} style={[styles.searchInput, { color: colors.foreground }]} />
+          <TextInput value={search} onChangeText={setSearch} placeholder={hi ? 'अपने उत्पाद खोजें' : 'Search your products'} placeholderTextColor={colors.mutedForeground} style={[styles.searchInput, { color: colors.foreground }]} />
           {search.length > 0 && <Pressable onPress={() => setSearch('')}><Ionicons name="close-circle" size={18} color={colors.mutedForeground} /></Pressable>}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          {['All items', 'Published', 'Draft'].map((item) => <Pressable key={item} onPress={() => setFilter(item)} style={[styles.chip, { borderColor: colors.border, backgroundColor: filter === item ? colors.indigo : colors.card }]}><Text style={[styles.chipText, { color: filter === item ? colors.primaryForeground : colors.mutedForeground }]}>{item}</Text></Pressable>)}
+          {['All items', 'Published', 'Draft'].map((item) => <Pressable key={item} onPress={() => setFilter(item)} style={[styles.chip, { borderColor: colors.border, backgroundColor: filter === item ? colors.indigo : colors.card }]}><Text style={[styles.chipText, { color: filter === item ? colors.primaryForeground : colors.mutedForeground }]}>{hi ? ({ 'All items': 'सभी', Published: 'प्रकाशित', Draft: 'ड्राफ्ट' } as Record<string, string>)[item] : item}</Text></Pressable>)}
         </ScrollView>
-        <View style={styles.catalogHeader}><Text style={[styles.count, { color: colors.mutedForeground }]}>{filtered.length} {filtered.length === 1 ? 'item' : 'items'}</Text><Text style={[styles.aiNote, { color: colors.sage }]}><Ionicons name="sparkles" size={12} color={colors.sage} /> AI-ready catalog</Text></View>
+        <View style={styles.catalogHeader}><Text style={[styles.count, { color: colors.mutedForeground }]}>{filtered.length} {hi ? 'आइटम' : filtered.length === 1 ? 'item' : 'items'}</Text><Text style={[styles.aiNote, { color: colors.sage }]}><Ionicons name="sparkles" size={12} color={colors.sage} /> {hi ? 'AI-तैयार कैटलॉग' : 'AI-ready catalog'}</Text></View>
         <View style={styles.list}>
           {filtered.map((product) => <Pressable key={product.id} style={[styles.item, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push({ pathname: '/product/[id]', params: { id: product.id } })}>
             <Image source={product.image} style={styles.itemImage} />
             <View style={styles.itemInfo}><View style={styles.itemTopline}><Text style={[styles.itemName, { color: colors.foreground }]} numberOfLines={2}>{product.name}</Text><Feather name="chevron-right" size={18} color={colors.mutedForeground} /></View><Text style={[styles.itemCraft, { color: colors.mutedForeground }]}>{product.craft}</Text><View style={styles.itemBottom}><Text style={[styles.itemPrice, { color: colors.primary }]}>₹{product.price.toLocaleString('en-IN')}</Text><View style={[styles.status, { backgroundColor: product.status === 'Published' ? '#e9efe6' : colors.secondary }]}><View style={[styles.statusDot, { backgroundColor: product.status === 'Published' ? colors.success : colors.accent }]} /><Text style={[styles.statusText, { color: colors.mutedForeground }]}>{product.status}</Text></View></View></View>
           </Pressable>)}
-          {filtered.length === 0 && <View style={[styles.empty, { borderColor: colors.border }]}><Feather name="search" size={24} color={colors.mutedForeground} /><Text style={[styles.emptyTitle, { color: colors.foreground }]}>No products found</Text><Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Try another word or create a new listing.</Text></View>}
+          {filtered.length === 0 && <View style={[styles.empty, { borderColor: colors.border }]}><Feather name="search" size={24} color={colors.mutedForeground} /><Text style={[styles.emptyTitle, { color: colors.foreground }]}>{hi ? 'उत्पाद नहीं मिले' : 'No products found'}</Text><Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{hi ? 'दूसरा शब्द आज़माएँ या नई लिस्टिंग बनाएँ।' : 'Try another word or create a new listing.'}</Text></View>}
         </View>
-        <Pressable style={[styles.bottomCta, { backgroundColor: colors.secondary }]} onPress={() => router.push('/create')}><View style={[styles.bottomCtaIcon, { backgroundColor: colors.primary }]}><Ionicons name="sparkles" size={16} color={colors.primaryForeground} /></View><View style={{ flex: 1 }}><Text style={[styles.bottomCtaTitle, { color: colors.foreground }]}>Add another product</Text><Text style={[styles.bottomCtaText, { color: colors.mutedForeground }]}>Let AI help with the hard parts</Text></View><Feather name="arrow-up-right" size={17} color={colors.primary} /></Pressable>
+        <Pressable style={[styles.bottomCta, { backgroundColor: colors.secondary }]} onPress={() => router.push('/create')}><View style={[styles.bottomCtaIcon, { backgroundColor: colors.primary }]}><Ionicons name="sparkles" size={16} color={colors.primaryForeground} /></View><View style={{ flex: 1 }}><Text style={[styles.bottomCtaTitle, { color: colors.foreground }]}>{hi ? 'एक और उत्पाद जोड़ें' : 'Add another product'}</Text><Text style={[styles.bottomCtaText, { color: colors.mutedForeground }]}>{hi ? 'मुश्किल कामों में AI मदद करेगा' : 'Let AI help with the hard parts'}</Text></View><Feather name="arrow-up-right" size={17} color={colors.primary} /></Pressable>
       </ScrollView>
     </View>
   );

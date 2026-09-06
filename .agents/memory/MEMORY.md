@@ -1,0 +1,1 @@
+- [Shopify order confirmation](shopify-order-confirmation.md) — checkout URL creation is not payment confirmation; verified receipts need an order sync boundary.
