@@ -1,44 +1,63 @@
-# [Project name]
+# Artisan Market
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Artisan Market is a cross-platform AI business manager that helps independent artisans create bilingual product listings, improve product photos, transcribe voice notes, and sell physical goods through Shopify.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server on the injected `PORT`
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/artisan-market run dev` — run the Expo mobile app
+- Required secret: `OPENAI_API_KEY` — configure through Replit Secrets
+- Required integration: Shopify Store — configure through Replit Integrations
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
+- pnpm workspaces, Node.js 24, TypeScript 6 in the mobile artifact
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Mobile: Expo 57, React Native, Expo Router
+- State: AsyncStorage for local catalog and receipt intent state
+- AI: OpenAI audio transcription and image editing through the API server
+- Commerce: Shopify Storefront API and hosted checkout
+- Build: esbuild for the API bundle, Metro for Expo
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/artisan-market/app/` — Expo Router screens
+- `artifacts/artisan-market/context/ArtisanContext.tsx` — catalog, language, Shopify mapping, and receipt state
+- `artifacts/artisan-market/constants/colors.ts` — artisan visual theme
+- `artifacts/api-server/src/routes/transcribe.ts` — voice transcription boundary
+- `artifacts/api-server/src/routes/enhance-image.ts` — AI image beautification boundary
+- `artifacts/api-server/src/routes/shopify.ts` — Shopify catalog and checkout boundary
+- `README.md` — GitHub-style setup and product documentation
+- `docs/API.md` — API request/response reference
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- OpenAI credentials are server-only; the Expo app calls project API routes instead of third-party APIs directly.
+- Shopify owns physical-product checkout and payment; the app never collects card data.
+- AsyncStorage is used for first-build local catalog persistence and offline drafting.
+- A checkout URL is not payment confirmation, so local receipt records remain pending until order sync is added.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- AI-assisted product photo beautification
+- Voice-to-text product descriptions
+- English/Hindi catalog content with app language selection
+- Suggested pricing and local catalog management
+- Shopify hosted checkout for physical artisan goods
+- PDF receipt generation and sharing
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the experience accessible to marginalized artisans and friendly to low-technical-literacy users.
+- Prefer English/Hindi clarity and preserve the warm artisan visual language.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Do not commit or paste API keys. Rotate any credential that appears in chat or source control.
+- Do not treat a Shopify checkout-start record as a confirmed paid order.
+- Use the managed artifact workflows; do not create duplicate Expo or API workflows.
 
 ## Pointers
 
