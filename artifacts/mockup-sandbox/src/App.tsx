@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import Navbar from "./components/Navbar";
+import Navbar, { type Language } from "./components/Navbar";
 import DemoBar from "./components/DemoBar";
 import Footer from "./components/Footer";
 import PehchanModal from "./components/PehchanModal";
@@ -28,7 +28,15 @@ const DEFAULT_USER: ArtisanProfile = {
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
-  const [language, setLanguage] = useState<"en" | "hi">("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem("kalasetu_selected_language");
+      if (saved && ["en", "hi", "bn", "gu", "mr", "ta", "te"].includes(saved)) {
+        return saved as Language;
+      }
+    } catch {}
+    return "en";
+  });
   const [isPehchanOpen, setIsPehchanOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<ArtisanProfile>(() => {
@@ -68,6 +76,13 @@ function App() {
     } catch {}
   };
 
+  const handleLanguageChange = (newLang: Language) => {
+    setLanguage(newLang);
+    try {
+      localStorage.setItem("kalasetu_selected_language", newLang);
+    } catch {}
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "studio":
@@ -103,7 +118,7 @@ function App() {
         currentPage={currentPage}
         onNavigate={navigate}
         language={language}
-        onLanguageToggle={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+        onLanguageChange={handleLanguageChange}
         onOpenPehchan={() => setIsPehchanOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         currentUser={{

@@ -1,35 +1,122 @@
 import { useState } from "react";
 
 export type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
+export type Language = "en" | "hi" | "bn" | "gu" | "mr" | "ta" | "te";
+
+export interface LanguageOption {
+  code: Language;
+  name: string;
+  nativeName: string;
+  flag: string;
+  region: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: "en", name: "English", nativeName: "English", flag: "🇬🇧", region: "Global / All India" },
+  { code: "hi", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳", region: "North & Central India" },
+  { code: "bn", name: "Bengali", nativeName: "বাংলা", flag: "🇮🇳", region: "West Bengal & Tripura" },
+  { code: "gu", name: "Gujarati", nativeName: "ગુજરાતી", flag: "🇮🇳", region: "Gujarat & Kutch" },
+  { code: "mr", name: "Marathi", nativeName: "मराठी", flag: "🇮🇳", region: "Maharashtra" },
+  { code: "ta", name: "Tamil", nativeName: "தமிழ்", flag: "🇮🇳", region: "Tamil Nadu" },
+  { code: "te", name: "Telugu", nativeName: "తెలుగు", flag: "🇮🇳", region: "Andhra Pradesh & Telangana" },
+];
 
 interface NavbarProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
-  language: "en" | "hi";
-  onLanguageToggle: () => void;
+  language: Language;
+  onLanguageChange: (lang: Language) => void;
   onOpenPehchan?: () => void;
   onOpenAuth?: () => void;
   currentUser?: { name: string; pehchanId: string };
 }
 
-const NAV_ITEMS: { key: Page; labelEn: string; labelHi: string }[] = [
-  { key: "home", labelEn: "Home", labelHi: "होम" },
-  { key: "dashboard", labelEn: "For Artisans", labelHi: "कारीगर डैशबोर्ड" },
-  { key: "studio", labelEn: "AI Studio", labelHi: "एआई स्टूडियो" },
-  { key: "marketplace", labelEn: "ONDC Market", labelHi: "थोक बाज़ार" },
-  { key: "analytics", labelEn: "Impact", labelHi: "सामाजिक प्रभाव" },
+const NAV_ITEMS: { key: Page; labels: Record<Language, string> }[] = [
+  {
+    key: "home",
+    labels: {
+      en: "Home",
+      hi: "होम",
+      bn: "হোম",
+      gu: "હોમ",
+      mr: "मुख्यपृष्ठ",
+      ta: "முகப்பு",
+      te: "హోమ్",
+    },
+  },
+  {
+    key: "dashboard",
+    labels: {
+      en: "For Artisans",
+      hi: "कारीगर डैशबोर्ड",
+      bn: "কারিগর ড্যাশবোর্ড",
+      gu: "કારીગર ડેશબોર્ડ",
+      mr: "कारागीर डॅशबोर्ड",
+      ta: "கைவினைஞர் பலகை",
+      te: "చేతివృత్తుల డ్యాష్‌బోర్డ్",
+    },
+  },
+  {
+    key: "studio",
+    labels: {
+      en: "AI Studio",
+      hi: "एआई स्टूडियो",
+      bn: "এআই স্টুডিও",
+      gu: "AI સ્ટુડિયો",
+      mr: "एआय स्टुडिओ",
+      ta: "AI ஸ்டுடியோ",
+      te: "AI స్టూడియో",
+    },
+  },
+  {
+    key: "marketplace",
+    labels: {
+      en: "ONDC Market",
+      hi: "थोक बाज़ार",
+      bn: "পাইকারি বাজার",
+      gu: "જથ્થાબંધ બજાર",
+      mr: "घाऊक बाजार",
+      ta: "மொத்த சந்தை",
+      te: "హోల్‌సేల్ మార్కెట్",
+    },
+  },
+  {
+    key: "analytics",
+    labels: {
+      en: "Impact",
+      hi: "सामाजिक प्रभाव",
+      bn: "সামাজিক প্রভাব",
+      gu: "સામાજિક પ્રભાવ",
+      mr: "सामाजिक प्रभाव",
+      ta: "சமூக தாக்கம்",
+      te: "సామాజిక ప్రభావం",
+    },
+  },
 ];
+
+const CTA_LABELS: Record<Language, string> = {
+  en: "Start Free",
+  hi: "निःशुल्क शुरू करें",
+  bn: "বিনামূল্যে শুরু করুন",
+  gu: "મફત શરૂ કરો",
+  mr: "मोफत सुरू करा",
+  ta: "இலவசமாக தொடங்கவும்",
+  te: "ఉచితంగా ప్రారంభించండి",
+};
 
 export default function Navbar({
   currentPage,
   onNavigate,
   language,
-  onLanguageToggle,
+  onLanguageChange,
   onOpenPehchan,
   onOpenAuth,
   currentUser,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+
+  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_2px_12px_rgba(43,46,72,0.06)] border-b border-surface-container-low">
@@ -71,7 +158,7 @@ export default function Navbar({
                     : "text-[#524534] hover:text-[#161a32]"
                 }`}
               >
-                {language === "en" ? item.labelEn : item.labelHi}
+                {item.labels[language] || item.labels.en}
               </button>
             );
           })}
@@ -79,17 +166,80 @@ export default function Navbar({
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
-          {/* Language Toggle */}
-          <button
-            onClick={onLanguageToggle}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-xs font-semibold cursor-pointer hover:bg-surface-container-high transition-colors shadow-sm"
-            title="Switch Language / भाषा बदलें"
-          >
-            <span>{language === "en" ? "🇮🇳 हिन्दी" : "🇬🇧 English"}</span>
-            <span className="material-symbols-outlined text-[15px] leading-none">
-              translate
-            </span>
-          </button>
+          {/* 7-Language Interactive Dropdown Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-xs font-semibold cursor-pointer hover:bg-surface-container-high transition-all shadow-sm border border-surface-container-high/60"
+              title="Choose Craft Language / भाषा चुनें"
+            >
+              <span className="material-symbols-outlined text-[15px] text-[#F5A623]">
+                translate
+              </span>
+              <span>{currentLangObj.flag} {currentLangObj.nativeName}</span>
+              <span className="material-symbols-outlined text-[14px] text-on-surface-variant transition-transform">
+                {langDropdownOpen ? "expand_less" : "expand_more"}
+              </span>
+            </button>
+
+            {/* Dropdown Floating Panel */}
+            {langDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setLangDropdownOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-[0_12px_40px_rgba(43,46,72,0.18)] border border-surface-container-low p-2 z-50">
+                  <div className="px-3 py-2 border-b border-surface-container-low">
+                    <p className="font-headline-sm text-xs font-bold text-on-surface flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-[#F5A623]">language</span>
+                      Choose Language / भाषा चुनें
+                    </p>
+                    <p className="font-label-sm text-[10px] text-on-surface-variant mt-0.5">
+                      7 Regional Indian Languages Supported
+                    </p>
+                  </div>
+
+                  <div className="py-1 flex flex-col gap-0.5 max-h-72 overflow-y-auto">
+                    {SUPPORTED_LANGUAGES.map((l) => {
+                      const isSelected = language === l.code;
+                      return (
+                        <button
+                          key={l.code}
+                          onClick={() => {
+                            onLanguageChange(l.code);
+                            setLangDropdownOpen(false);
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-primary-container/25 text-primary font-bold border border-primary/30"
+                              : "hover:bg-surface-container-low text-on-surface"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base">{l.flag}</span>
+                            <div>
+                              <div className="font-label-md text-xs font-semibold leading-tight">
+                                {l.nativeName} <span className="text-on-surface-variant font-normal">({l.name})</span>
+                              </div>
+                              <div className="font-label-sm text-[10px] text-on-surface-variant/70">
+                                {l.region}
+                              </div>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[18px] text-primary">
+                              check_circle
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Account / Login Button */}
           <button
@@ -104,7 +254,7 @@ export default function Navbar({
             onClick={() => onNavigate("studio")}
             className="inline-flex items-center justify-center px-4 md:px-5 py-2 rounded-full font-label-md text-xs md:text-sm text-white font-semibold bg-gradient-to-r from-[#F5A623] to-[#E07A5F] shadow-[0_0_16px_rgba(245,166,35,0.35)] hover:shadow-[0_0_24px_rgba(245,166,35,0.55)] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
-            <span>{language === "en" ? "Start Free — शुरू करें" : "निःशुल्क शुरू करें"}</span>
+            <span>{CTA_LABELS[language] || CTA_LABELS.en}</span>
           </button>
 
           {/* Profile Avatar / Pehchan ID Card Trigger */}
@@ -156,7 +306,7 @@ export default function Navbar({
                     : "hover:bg-surface-container-low text-on-surface"
                 }`}
               >
-                <span>{language === "en" ? item.labelEn : item.labelHi}</span>
+                <span>{item.labels[language] || item.labels.en}</span>
                 {isActive && (
                   <span className="material-symbols-outlined text-primary text-base">
                     check
@@ -165,7 +315,35 @@ export default function Navbar({
               </button>
             );
           })}
-          <div className="pt-2 border-t border-surface-container flex items-center justify-between">
+
+          {/* Mobile 7-Language Grid Selector */}
+          <div className="mt-3 pt-3 border-t border-surface-container-low">
+            <p className="font-label-md text-xs font-bold text-on-surface-variant px-1 mb-2 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px] text-[#F5A623]">translate</span>
+              SELECT CRAFT LANGUAGE / भाषा ({SUPPORTED_LANGUAGES.length})
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {SUPPORTED_LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => {
+                    onLanguageChange(l.code);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`px-2.5 py-2 rounded-xl text-xs font-medium text-left flex items-center gap-2 transition-all ${
+                    language === l.code
+                      ? "bg-primary-container text-on-primary-container font-bold shadow-sm border border-primary/40"
+                      : "bg-surface-container-low text-on-surface hover:bg-surface-container"
+                  }`}
+                >
+                  <span className="text-sm">{l.flag}</span>
+                  <span className="truncate">{l.nativeName}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-surface-container flex items-center justify-between">
             <button
               onClick={() => {
                 onOpenAuth?.();

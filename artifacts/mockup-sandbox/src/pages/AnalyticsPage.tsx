@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import type { Language } from "../components/Navbar";
 
 interface AnalyticsPageProps {
-  lang: "en" | "hi";
+  lang: Language;
 }
 
 const API_BASE = "/api";

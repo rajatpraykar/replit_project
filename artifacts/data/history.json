@@ -1,5 +1,33 @@
 [
   {
+    "id": "hist_1788989884482",
+    "userId": "artisan_1788989884481",
+    "action": "ACCOUNT_CREATED",
+    "title": "Artisan Account Registered: Meera Ben Patel",
+    "details": "Sovereign Pehchan ID issued (KST-GU-2024-3400) for cluster Ajrakhpur Block Print & Bandhani.",
+    "timestamp": "2026-09-09T21:38:04.482Z",
+    "category": "Identity"
+  },
+  {
+    "id": "hist_1788989735929_760",
+    "userId": "artisan_1788989585744",
+    "action": "PHOTO_ENHANCED",
+    "title": "Studio Polish: WhatsApp Image 2026-09-05 at 3.39.16 PM.jpeg",
+    "details": "4K background isolation, softbox illumination, and contrast enhancement applied.",
+    "timestamp": "2026-09-09T21:35:35.929Z",
+    "category": "Studio",
+    "meta": {}
+  },
+  {
+    "id": "hist_1788989585745",
+    "userId": "artisan_1788989585744",
+    "action": "ACCOUNT_CREATED",
+    "title": "Artisan Account Registered: Meera Ben Patel",
+    "details": "Sovereign Pehchan ID issued (KST-GU-2024-5498) for cluster Ajrakhpur Block Print & Bandhani.",
+    "timestamp": "2026-09-09T21:33:05.745Z",
+    "category": "Identity"
+  },
+  {
     "id": "hist_1788989459240",
     "userId": "artisan_1788989459239",
     "action": "ACCOUNT_CREATED",

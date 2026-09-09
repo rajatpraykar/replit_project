@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { Page } from "../components/Navbar";
+import type { Page, Language } from "../components/Navbar";
 
 interface LandingPageProps {
-  lang: "en" | "hi";
+  lang: Language;
   onNavigate: (page: Page) => void;
 }
 

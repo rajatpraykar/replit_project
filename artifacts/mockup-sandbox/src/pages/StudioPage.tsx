@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import type { Page } from "../components/Navbar";
+import type { Page, Language } from "../components/Navbar";
 
 interface StudioPageProps {
-  lang: "en" | "hi";
+  lang: Language;
   onNavigate?: (page: Page) => void;
 }
 
@@ -20,7 +20,14 @@ const DEFAULT_RAW_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuDKG
 const DEFAULT_ENHANCED_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuCCs5Hy657myZZWE38Dsz74tkshFa1yOL81olTJfUqMHEExSWgMoz2T3rJFCwYrVeflzWZrlGb1_5gCqomxa6x3w_Nac1iTaHUiYTV90kiqyiLxZ0RuLaFtZf4ROB5I3Sqy3h-_jsZ-gbcAQdtIKC6sPH8tizY95EkMfaykFDIc3BxnRXlqCjmLa8i5Rt8rXr8N1THCoUtzRNdxaavJ39miDB0d_vZYuXA_MhFLoD7riS01T8JG_IgmOg";
 
 export default function StudioPage({ lang }: StudioPageProps) {
-  const [selectedLang, setSelectedLang] = useState("hi");
+  const [selectedLang, setSelectedLang] = useState(lang || "hi");
+
+  // Keep studio vernacular dialect synchronized with global navbar language selector
+  useEffect(() => {
+    if (lang) {
+      setSelectedLang(lang);
+    }
+  }, [lang]);
   const [isRecording, setIsRecording] = useState(false);
   const [hours, setHours] = useState(42);
   const [materialCost, setMaterialCost] = useState(450);

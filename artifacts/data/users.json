@@ -68,5 +68,33 @@
     "aadhaarVerified": true,
     "verifiedBy": "Ministry of Social Justice & Empowerment (MoSJE)",
     "createdAt": "2026-09-09T21:30:59.239Z"
+  },
+  {
+    "id": "artisan_1788989585744",
+    "name": "Meera Ben Patel",
+    "phone": "+91 98765 43220",
+    "state": "Gujarat",
+    "district": "Kutch",
+    "craftCluster": "Ajrakhpur Block Print & Bandhani",
+    "socialCategory": "Artisan Self Help Group",
+    "udyamNumber": "UDYAM-GU-24-8994353",
+    "pehchanId": "KST-GU-2024-5498",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Social Justice & Empowerment (MoSJE)",
+    "createdAt": "2026-09-09T21:33:05.744Z"
+  },
+  {
+    "id": "artisan_1788989884481",
+    "name": "Meera Ben Patel",
+    "phone": "+91 98765 43220",
+    "state": "Gujarat",
+    "district": "Kutch",
+    "craftCluster": "Ajrakhpur Block Print & Bandhani",
+    "socialCategory": "Artisan Self Help Group",
+    "udyamNumber": "UDYAM-GU-24-6875519",
+    "pehchanId": "KST-GU-2024-3400",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Social Justice & Empowerment (MoSJE)",
+    "createdAt": "2026-09-09T21:38:04.481Z"
   }
 ]
