@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "./components/Navbar";
 import DemoBar from "./components/DemoBar";
+import Footer from "./components/Footer";
 import PehchanModal from "./components/PehchanModal";
 import LandingPage from "./pages/LandingPage";
 import StudioPage from "./pages/StudioPage";
@@ -8,7 +9,7 @@ import MarketplacePage from "./pages/MarketplacePage";
 import DashboardPage from "./pages/DashboardPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 
-type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
+export type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -40,11 +41,17 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "studio":
-        return <StudioPage lang={language} />;
+        return <StudioPage lang={language} onNavigate={navigate} />;
       case "marketplace":
-        return <MarketplacePage lang={language} />;
+        return <MarketplacePage lang={language} onNavigate={navigate} />;
       case "dashboard":
-        return <DashboardPage lang={language} />;
+        return (
+          <DashboardPage
+            lang={language}
+            onNavigate={navigate}
+            onOpenPehchan={() => setIsPehchanOpen(true)}
+          />
+        );
       case "analytics":
         return <AnalyticsPage lang={language} />;
       default:
@@ -53,44 +60,33 @@ function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen flex flex-col bg-[#FFFBF2] text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
+      {/* Top Fixed Header */}
       <Navbar
         currentPage={currentPage}
         onNavigate={navigate}
         language={language}
         onLanguageToggle={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
-      />
-      <DemoBar
-        onNavigate={navigate}
         onOpenPehchan={() => setIsPehchanOpen(true)}
-        currentPage={currentPage}
       />
-      <main style={{ flex: 1 }}>
-        {renderPage()}
-      </main>
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-tertiary)",
-          fontSize: "12px",
-          borderTop: "1px solid var(--border)",
-          background: "rgba(10, 15, 25, 0.95)",
-        }}
-      >
-        <p>
-          🪔 KalaSetu (कलासेतु) • Smart India Hackathon 2024 Grand Finale • PS ID: 26090
-        </p>
-        <p style={{ marginTop: "4px" }}>
-          Ministry of Social Justice & Empowerment (MoSJE) • Empowering Traditional Artisan Communities
-        </p>
-      </footer>
+
+      {/* Sticky Demo Bar */}
+      <div className="pt-[72px]">
+        <DemoBar
+          onNavigate={navigate}
+          onOpenPehchan={() => setIsPehchanOpen(true)}
+          currentPage={currentPage}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 w-full">{renderPage()}</main>
+
+      {/* Stitch 4-Column Indigo Footer */}
+      <Footer onNavigate={navigate} />
 
       {/* Sovereign Pehchan Smart ID Modal */}
-      <PehchanModal
-        isOpen={isPehchanOpen}
-        onClose={() => setIsPehchanOpen(false)}
-      />
+      <PehchanModal isOpen={isPehchanOpen} onClose={() => setIsPehchanOpen(false)} />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import React from "react";
-
-type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
+import type { Page } from "./Navbar";
 
 interface DemoBarProps {
   onNavigate: (page: Page) => void;
@@ -10,77 +9,67 @@ interface DemoBarProps {
 
 export default function DemoBar({ onNavigate, onOpenPehchan, currentPage }: DemoBarProps) {
   return (
-    <div
-      style={{
-        position: "sticky",
-        top: "var(--navbar-height)",
-        zIndex: 900,
-        background: "rgba(18, 24, 38, 0.96)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(245, 166, 35, 0.2)",
-        padding: "8px clamp(12px, 3vw, 24px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "8px",
-        overflowX: "auto",
-        WebkitOverflowScrolling: "touch",
-      }}
-    >
-      {/* Left Title */}
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-        <span className="badge badge-warning" style={{ fontSize: "11px", fontWeight: 700, padding: "4px 8px" }}>
-          ⚡ SIH JURY DEMOS
+    <div className="sticky top-[72px] z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-surface-container-low px-4 md:px-8 py-2 flex items-center justify-between gap-3 overflow-x-auto shadow-sm">
+      {/* Left Title Badge */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-[11px] font-bold shadow-sm">
+          <span className="material-symbols-outlined text-[14px]">bolt</span>
+          <span>SIH JURY DEMOS</span>
         </span>
       </div>
 
       {/* Demo Action Buttons */}
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+      <div className="flex items-center gap-2 flex-shrink-0">
         <button
           onClick={() => onNavigate("studio")}
-          className={currentPage === "studio" ? "btn btn-primary btn-sm" : "btn btn-secondary btn-sm"}
-          style={{ fontSize: "11.5px", padding: "6px 12px", whiteSpace: "nowrap" }}
+          className={`px-3 py-1 rounded-full font-label-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            currentPage === "studio"
+              ? "bg-primary-fixed text-on-primary-fixed font-bold shadow-sm"
+              : "bg-surface-container hover:bg-surface-container-high text-on-surface"
+          }`}
         >
           🎙️ Demo 1: Voice ASR
         </button>
 
         <button
           onClick={() => onNavigate("studio")}
-          className={currentPage === "studio" ? "btn btn-primary btn-sm" : "btn btn-secondary btn-sm"}
-          style={{ fontSize: "11.5px", padding: "6px 12px", whiteSpace: "nowrap" }}
+          className={`px-3 py-1 rounded-full font-label-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            currentPage === "studio"
+              ? "bg-primary-fixed text-on-primary-fixed font-bold shadow-sm"
+              : "bg-surface-container hover:bg-surface-container-high text-on-surface"
+          }`}
         >
           📸 Demo 2: Enhancer
         </button>
 
         <button
           onClick={() => onNavigate("studio")}
-          className={currentPage === "studio" ? "btn btn-primary btn-sm" : "btn btn-secondary btn-sm"}
-          style={{ fontSize: "11.5px", padding: "6px 12px", whiteSpace: "nowrap" }}
+          className={`px-3 py-1 rounded-full font-label-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            currentPage === "studio"
+              ? "bg-primary-fixed text-on-primary-fixed font-bold shadow-sm"
+              : "bg-surface-container hover:bg-surface-container-high text-on-surface"
+          }`}
         >
           💰 Demo 3: Fair Wage
         </button>
 
         <button
           onClick={() => onNavigate("marketplace")}
-          className={currentPage === "marketplace" ? "btn btn-primary btn-sm" : "btn btn-secondary btn-sm"}
-          style={{ fontSize: "11.5px", padding: "6px 12px", whiteSpace: "nowrap" }}
+          className={`px-3 py-1 rounded-full font-label-sm text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            currentPage === "marketplace"
+              ? "bg-primary-fixed text-on-primary-fixed font-bold shadow-sm"
+              : "bg-surface-container hover:bg-surface-container-high text-on-surface"
+          }`}
         >
           🛒 Demo 4: ONDC
         </button>
 
         <button
           onClick={onOpenPehchan}
-          className="btn btn-ghost btn-sm"
-          style={{
-            fontSize: "11.5px",
-            padding: "6px 12px",
-            border: "1px solid rgba(245, 166, 35, 0.3)",
-            color: "var(--saffron)",
-            whiteSpace: "nowrap",
-          }}
+          className="px-3 py-1 rounded-full font-label-sm text-xs font-bold whitespace-nowrap bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim transition-all cursor-pointer flex items-center gap-1 shadow-sm"
         >
-          🆔 Pehchan ID
+          <span className="material-symbols-outlined text-[14px]">badge</span>
+          <span>🆔 Pehchan ID</span>
         </button>
       </div>
     </div>

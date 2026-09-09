@@ -13,14 +13,129 @@
     <meta name="twitter:description" content="Empowering marginalized artisan communities with AI, voice-first technology, and fair-trade pricing." />
     <meta name="theme-color" content="#F5A623" />
 
-    <title>🪔 KalaSetu (कलासेतु) — Digital Artisan Empowerment Platform</title>
+    <title>KalaSetu (कलासेतु) — AI-Powered Artisan Marketplace</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#9fd1b8",
+              "inverse-surface": "#2b2e48",
+              "outline": "#857462",
+              "primary": "#835500",
+              "surface-container-high": "#e6e6ff",
+              "surface-container-highest": "#dfe0ff",
+              "on-error": "#ffffff",
+              "tertiary-fixed": "#bbeed4",
+              "on-primary": "#ffffff",
+              "on-background": "#161a32",
+              "error": "#ba1a1a",
+              "on-primary-container": "#644000",
+              "on-tertiary": "#ffffff",
+              "background": "#fbf8ff",
+              "inverse-primary": "#ffb955",
+              "outline-variant": "#d7c3ae",
+              "on-secondary-container": "#742814",
+              "surface-bright": "#fbf8ff",
+              "primary-fixed-dim": "#ffb955",
+              "secondary": "#9a442d",
+              "secondary-fixed": "#ffdbd2",
+              "on-tertiary-fixed": "#002115",
+              "primary-container": "#f5a623",
+              "inverse-on-surface": "#f1efff",
+              "on-secondary-fixed": "#3c0800",
+              "error-container": "#ffdad6",
+              "surface-variant": "#dfe0ff",
+              "on-primary-fixed": "#291800",
+              "secondary-fixed-dim": "#ffb4a1",
+              "on-tertiary-container": "#20503d",
+              "surface-dim": "#d6d8f9",
+              "secondary-container": "#fc9174",
+              "surface-container": "#edecff",
+              "on-secondary-fixed-variant": "#7c2e19",
+              "on-surface": "#161a32",
+              "surface": "#fbf8ff",
+              "tertiary-container": "#8fc1a8",
+              "on-tertiary-fixed-variant": "#1f4f3c",
+              "surface-tint": "#835500",
+              "on-primary-fixed-variant": "#633f00",
+              "on-surface-variant": "#524534",
+              "on-secondary": "#ffffff",
+              "on-error-container": "#93000a",
+              "primary-fixed": "#ffddb4",
+              "tertiary": "#386753",
+              "surface-container-low": "#f4f2ff"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            spacing: {
+              "margin-tablet": "2rem",
+              "space-2xl": "3rem",
+              "gutter-desktop": "1.5rem",
+              "space-xs": "0.5rem",
+              "space-md": "1rem",
+              "space-xl": "2rem",
+              "max-content-width": "1440px",
+              "margin-mobile": "1rem",
+              "space-4xl": "6rem",
+              "space-3xl": "4rem",
+              "space-lg": "1.5rem",
+              "space-sm": "0.75rem",
+              "gutter-mobile": "1rem",
+              "margin-desktop": "5rem",
+              "space-2xs": "0.25rem"
+            },
+            fontFamily: {
+              "body-lg": ["Inter"],
+              "headline-2xl": ["Epilogue"],
+              "headline-sm": ["Epilogue"],
+              "body-sm": ["Inter"],
+              "headline-lg-mobile": ["Epilogue"],
+              "body-md": ["Inter"],
+              "headline-2xl-mobile": ["Epilogue"],
+              "label-md": ["Inter"],
+              "headline-lg": ["Epilogue"],
+              "headline-md": ["Epilogue"],
+              "headline-xl-mobile": ["Epilogue"],
+              "headline-xl": ["Epilogue"],
+              "label-sm": ["Inter"],
+              "code-sm": ["JetBrains Mono"]
+            },
+            fontSize: {
+              "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+              "headline-2xl": ["52px", { lineHeight: "62px", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+              "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+              "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              "headline-2xl-mobile": ["36px", { lineHeight: "44px", letterSpacing: "-0.01em", fontWeight: "700" }],
+              "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+              "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "600" }],
+              "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+              "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+              "headline-xl": ["40px", { lineHeight: "48px", letterSpacing: "-0.01em", fontWeight: "700" }],
+              "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }],
+              "code-sm": ["13px", { lineHeight: "18px", fontWeight: "500" }]
+            }
+          }
+        }
+      };
+    </script>
   </head>
-  <body style="height: 100%; margin: 0">
-    <div id="root" style="height: 100%"></div>
+  <body class="bg-surface font-body-md text-body-md text-on-surface antialiased" style="min-height: 100vh; margin: 0">
+    <div id="root" style="min-height: 100vh"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
