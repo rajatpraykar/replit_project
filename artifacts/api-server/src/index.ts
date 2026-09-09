@@ -10,8 +10,8 @@ if (Number.isNaN(port) || port <= 0) {
 
 // Express 5 app.listen() returns the server, callback has no error param.
 // Use the 'error' event on the server for robust error handling.
-const server = app.listen(port, () => {
-  logger.info({ port }, "🪔 KalaSetu API Gateway is live");
+const server = app.listen(port, "0.0.0.0", () => {
+  logger.info({ port, host: "0.0.0.0" }, "🪔 KalaSetu API Gateway is live across all network interfaces");
 });
 
 server.on("error", (err: NodeJS.ErrnoException) => {

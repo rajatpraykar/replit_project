@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 interface ImageComparisonSliderProps {
   lang?: "en" | "hi";
@@ -45,26 +45,38 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
 
   const preset = PRESETS.find((p) => p.id === activePreset) || PRESETS[0];
 
-  const handleMove = (clientX: number) => {
+  const updatePosition = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPos(percentage);
+  }, []);
+
+  // Universal pointer event handling (Touch, Mouse, Pen for all devices & OS)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDragging.current = true;
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    updatePosition(e.clientX);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (isDragging.current) {
-      handleMove(e.clientX);
+      updatePosition(e.clientX);
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    isDragging.current = false;
+    try {
+      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore */
     }
   };
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: "100%", touchAction: "none" }}>
       {/* Preset Switcher */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
         {PRESETS.map((p) => (
@@ -94,21 +106,22 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
       {/* Comparison Canvas Box */}
       <div
         ref={containerRef}
-        onMouseDown={() => (isDragging.current = true)}
-        onMouseUp={() => (isDragging.current = false)}
-        onMouseLeave={() => (isDragging.current = false)}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         style={{
           position: "relative",
           width: "100%",
-          height: "360px",
+          height: "clamp(260px, 40vw, 360px)",
           borderRadius: "var(--radius-lg)",
           overflow: "hidden",
           cursor: "ew-resize",
           userSelect: "none",
+          WebkitUserSelect: "none",
           boxShadow: "var(--shadow-card)",
           border: "1px solid var(--border-strong)",
+          touchAction: "none",
         }}
       >
         {/* ─── AFTER LAYER (Enhanced Studio View) ─── */}
@@ -126,19 +139,19 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
           <div
             style={{
               position: "absolute",
-              width: "280px",
-              height: "280px",
+              width: "clamp(180px, 30vw, 280px)",
+              height: "clamp(180px, 30vw, 280px)",
               borderRadius: "50%",
               background: "radial-gradient(circle, rgba(245, 166, 35, 0.18) 0%, rgba(224, 122, 95, 0.05) 50%, transparent 70%)",
               filter: "blur(20px)",
             }}
           />
 
-          {/* Enhanced Craft Graphic Representation */}
+          {/* Enhanced Craft Graphic */}
           <div style={{ position: "relative", textAlign: "center", zIndex: 2 }}>
             <div
               style={{
-                fontSize: "110px",
+                fontSize: "clamp(70px, 12vw, 110px)",
                 filter: "drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 15px rgba(245, 166, 35, 0.35))",
                 transform: "scale(1.05)",
                 transition: "transform 0.3s ease",
@@ -150,15 +163,15 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
             {/* Studio Badge */}
             <div
               style={{
-                marginTop: "16px",
+                marginTop: "12px",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                padding: "4px 14px",
+                padding: "4px 12px",
                 borderRadius: "var(--radius-full)",
                 background: "rgba(245, 166, 35, 0.95)",
                 color: "#111",
-                fontSize: "11px",
+                fontSize: "clamp(9px, 2vw, 11px)",
                 fontWeight: 700,
                 letterSpacing: "0.5px",
                 boxShadow: "0 4px 15px rgba(245, 166, 35, 0.4)",
@@ -172,12 +185,12 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
           <div
             style={{
               position: "absolute",
-              top: "14px",
-              right: "14px",
-              padding: "4px 12px",
+              top: "12px",
+              right: "12px",
+              padding: "4px 10px",
               background: "rgba(16, 185, 129, 0.9)",
               color: "#FFF",
-              fontSize: "11px",
+              fontSize: "10px",
               fontWeight: 700,
               borderRadius: "var(--radius-sm)",
               zIndex: 3,
@@ -212,20 +225,19 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
               background: "repeating-linear-gradient(45deg, #241D18, #241D18 10px, #1C1713 10px, #1C1713 20px)",
             }}
           >
-            {/* Raw Dull Craft Representation */}
             <div style={{ position: "relative", textAlign: "center", opacity: 0.65, filter: "grayscale(30%) brightness(0.8)" }}>
-              <div style={{ fontSize: "100px", transform: "rotate(-8deg)" }}>
+              <div style={{ fontSize: "clamp(65px, 11vw, 100px)", transform: "rotate(-8deg)" }}>
                 {activePreset === "textile" ? "🧣" : activePreset === "pottery" ? "🪔" : "🖼️"}
               </div>
               <div
                 style={{
-                  marginTop: "16px",
+                  marginTop: "12px",
                   display: "inline-block",
-                  padding: "4px 10px",
+                  padding: "3px 8px",
                   borderRadius: "var(--radius-sm)",
                   background: "rgba(0,0,0,0.6)",
                   color: "#CCC",
-                  fontSize: "10px",
+                  fontSize: "9px",
                 }}
               >
                 Raw Camera Shot
@@ -237,12 +249,12 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
           <div
             style={{
               position: "absolute",
-              top: "14px",
-              left: "14px",
-              padding: "4px 12px",
+              top: "12px",
+              left: "12px",
+              padding: "4px 10px",
               background: "rgba(0, 0, 0, 0.75)",
               color: "#E2E8F0",
-              fontSize: "11px",
+              fontSize: "10px",
               fontWeight: 600,
               borderRadius: "var(--radius-sm)",
             }}
@@ -269,8 +281,8 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
         >
           <div
             style={{
-              width: "36px",
-              height: "36px",
+              width: "34px",
+              height: "34px",
               borderRadius: "50%",
               background: "var(--saffron)",
               boxShadow: "0 0 15px rgba(245, 166, 35, 0.8), 0 2px 8px rgba(0,0,0,0.5)",
@@ -278,7 +290,7 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
               alignItems: "center",
               justifyContent: "center",
               color: "#111",
-              fontSize: "14px",
+              fontSize: "13px",
               fontWeight: 800,
               border: "2px solid #FFF",
             }}
@@ -288,15 +300,33 @@ export default function ImageComparisonSlider({ lang = "en" }: ImageComparisonSl
         </div>
       </div>
 
+      {/* Accessible native slider for assistive tech & keyboards */}
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value={sliderPos}
+        onChange={(e) => setSliderPos(Number(e.target.value))}
+        aria-label="Before and after enhancement comparison slider"
+        style={{
+          width: "100%",
+          marginTop: "10px",
+          accentColor: "var(--saffron)",
+          cursor: "pointer",
+        }}
+      />
+
       {/* Dynamic Explanation Caption */}
       <div
         style={{
-          marginTop: "12px",
+          marginTop: "8px",
           display: "flex",
           justifyContent: "space-between",
-          fontSize: "12px",
+          fontSize: "11px",
           color: "var(--text-secondary)",
           padding: "0 4px",
+          flexWrap: "wrap",
+          gap: "6px",
         }}
       >
         <span style={{ color: "var(--text-tertiary)" }}>👈 {preset.beforeDesc}</span>

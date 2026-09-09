@@ -423,22 +423,55 @@ def verify_and_install_system_and_libraries(
 # ==============================================================================
 # Mission Control Dashboard
 # ==============================================================================
+def get_local_ip() -> str:
+    """Attempts to dynamically determine host local network IP for mobile device access."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.2)
+        # Connect to public DNS address (does not actually send data)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+# ==============================================================================
+# Mission Control Dashboard
+# ==============================================================================
 def print_mission_control(backend_type: str, backend_port: int, frontend_mode: str, web_port: int, mobile_port: int):
     api_title = "Node.js Express Gateway" if backend_type == "node" else "Python FastAPI Microservice"
+    local_ip = get_local_ip()
+    
     docs_line = f"║  📚 API Swagger Docs : {C.B_CYAN}http://localhost:{backend_port}/docs{C.RESET}{' ' * (37 - len(str(backend_port)))}║\n" if backend_type == "python" else ""
     
-    web_line = f"║  💻 Desktop Web App  : {C.B_GREEN}http://localhost:{web_port}{C.RESET}{' ' * (37 - len(str(web_port)))}║\n" if frontend_mode in ["desktop", "both"] else ""
-    mobile_line = f"║  📱 Mobile Web Client : {C.B_MAGENTA}http://localhost:{mobile_port}{C.RESET}{' ' * (37 - len(str(mobile_port)))}║\n" if frontend_mode in ["mobile", "both"] else ""
+    web_local = f"http://localhost:{web_port}"
+    web_net = f"http://{local_ip}:{web_port}"
+    
+    web_lines = ""
+    if frontend_mode in ["desktop", "both"]:
+        web_lines = (
+            f"║  💻 Laptop / Desktop : {C.B_GREEN}{web_local}{C.RESET}{' ' * max(1, 57 - len(web_local))}║\n"
+            f"║  📱 Phone / Wi-Fi    : {C.B_CYAN}{web_net}{C.RESET}{' ' * max(1, 57 - len(web_net))}║\n"
+        )
+
+    mobile_lines = ""
+    if frontend_mode in ["mobile", "both"]:
+        mobile_lines = (
+            f"║  📱 Mobile Metro Hub : {C.B_MAGENTA}http://localhost:{mobile_port}{C.RESET}{' ' * max(1, 57 - len(f'http://localhost:{mobile_port}'))}║\n"
+        )
 
     print(f"""
 {C.B_GREEN}╔════════════════════════════════════════════════════════════════════════════════╗
-║               🪔 KalaSetu (कलासेतु) • ALL SYSTEMS OPERATIONAL                 ║
+║         🪔 KalaSetu (कलासेतु) • CROSS-DEVICE / MULTI-OS OPERATIONAL            ║
 ╠════════════════════════════════════════════════════════════════════════════════╣
-{web_line}{mobile_line}║  ⚙️  API Gateway ({backend_type.upper()}) : {C.B_CYAN}http://localhost:{backend_port}{C.RESET}{' ' * (37 - len(str(backend_port)))}║
-║  🏥 API Health Probe  : {C.B_WHITE}http://localhost:{backend_port}/api/healthz{C.RESET}{' ' * (25 - len(str(backend_port)))}║
-{docs_line}║  📦 Backend Runtime   : {C.B_YELLOW}{api_title}{C.RESET}{' ' * (37 - len(api_title))}║
+{web_lines}{mobile_lines}║  ⚙️  API Gateway ({backend_type.upper()}) : {C.B_CYAN}http://localhost:{backend_port}{C.RESET} | {C.DIM}Network:{C.RESET} {C.B_CYAN}http://{local_ip}:{backend_port}{C.RESET}{' ' * max(1, 33 - len(local_ip) - len(str(backend_port)))}║
+║  🏥 API Health Probe  : {C.B_WHITE}http://localhost:{backend_port}/api/healthz{C.RESET}{' ' * max(1, 55 - len(f'http://localhost:{backend_port}/api/healthz'))}║
+{docs_line}║  📦 Backend Runtime   : {C.B_YELLOW}{api_title}{C.RESET}{' ' * max(1, 55 - len(api_title))}║
+║  🌐 Browser Support   : Chrome, Safari, Edge, Firefox, iOS Webkit, Android     ║
 ║  🎯 Stitch Design UI  : Light & Colourful "KalaSetu Craft Modernity" Theme     ║
 ╚════════════════════════════════════════════════════════════════════════════════╝{C.RESET}
+{C.DIM}👉 Tip: Open the {C.B_CYAN}Phone / Wi-Fi{C.DIM} URL on your smartphone browser on the same Wi-Fi!{C.RESET}
 {C.DIM}👉 Tip: Press {C.B_WHITE}Ctrl + C{C.DIM} anytime to safely shut down all services.{C.RESET}
 """, flush=True)
 
