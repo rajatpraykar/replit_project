@@ -1,146 +1,98 @@
-import { useEffect, useState, type ComponentType } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Navbar from "./components/Navbar";
+import DemoBar from "./components/DemoBar";
+import PehchanModal from "./components/PehchanModal";
+import LandingPage from "./pages/LandingPage";
+import StudioPage from "./pages/StudioPage";
+import MarketplacePage from "./pages/MarketplacePage";
+import DashboardPage from "./pages/DashboardPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
-import { modules as discoveredModules } from "./.generated/mockup-components";
-
-type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
-
-function _resolveComponent(
-  mod: Record<string, unknown>,
-  name: string,
-): ComponentType | undefined {
-  const fns = Object.values(mod).filter(
-    (v) => typeof v === "function",
-  ) as ComponentType[];
-  return (
-    (mod.default as ComponentType) ||
-    (mod.Preview as ComponentType) ||
-    (mod[name] as ComponentType) ||
-    fns[fns.length - 1]
-  );
-}
-
-function PreviewRenderer({
-  componentPath,
-  modules,
-}: {
-  componentPath: string;
-  modules: ModuleMap;
-}) {
-  const [Component, setComponent] = useState<ComponentType | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    setComponent(null);
-    setError(null);
-
-    async function loadComponent(): Promise<void> {
-      const key = `./components/mockups/${componentPath}.tsx`;
-      const loader = modules[key];
-      if (!loader) {
-        setError(`No component found at ${componentPath}.tsx`);
-        return;
-      }
-
-      try {
-        const mod = await loader();
-        if (cancelled) {
-          return;
-        }
-        const name = componentPath.split("/").pop()!;
-        const comp = _resolveComponent(mod, name);
-        if (!comp) {
-          setError(
-            `No exported React component found in ${componentPath}.tsx\n\nMake sure the file has at least one exported function component.`,
-          );
-          return;
-        }
-        setComponent(() => comp);
-      } catch (e) {
-        if (cancelled) {
-          return;
-        }
-
-        const message = e instanceof Error ? e.message : String(e);
-        setError(`Failed to load preview.\n${message}`);
-      }
-    }
-
-    void loadComponent();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [componentPath, modules]);
-
-  if (error) {
-    return (
-      <pre style={{ color: "red", padding: "2rem", fontFamily: "system-ui" }}>
-        {error}
-      </pre>
-    );
-  }
-
-  if (!Component) return null;
-
-  return <Component />;
-}
-
-function getBasePath(): string {
-  return import.meta.env.BASE_URL.replace(/\/$/, "");
-}
-
-function getPreviewExamplePath(): string {
-  const basePath = getBasePath();
-  return `${basePath}/preview/ComponentName`;
-}
-
-function Gallery() {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <div className="text-center max-w-md">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-3">
-          Component Preview Server
-        </h1>
-        <p className="text-gray-500 mb-4">
-          This server renders individual components for the workspace canvas.
-        </p>
-        <p className="text-sm text-gray-400">
-          Access component previews at{" "}
-          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
-            {getPreviewExamplePath()}
-          </code>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function getPreviewPath(): string | null {
-  const basePath = getBasePath();
-  const { pathname } = window.location;
-  const local =
-    basePath && pathname.startsWith(basePath)
-      ? pathname.slice(basePath.length) || "/"
-      : pathname;
-  const match = local.match(/^\/preview\/(.+)$/);
-  return match ? match[1] : null;
-}
+type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
 
 function App() {
-  const previewPath = getPreviewPath();
+  const [currentPage, setCurrentPage] = useState<Page>("home");
+  const [language, setLanguage] = useState<"en" | "hi">("en");
+  const [isPehchanOpen, setIsPehchanOpen] = useState(false);
 
-  if (previewPath) {
-    return (
-      <PreviewRenderer
-        componentPath={previewPath}
-        modules={discoveredModules}
+  // Hash-based routing for cross-browser compatibility
+  const navigate = useCallback((page: Page) => {
+    window.location.hash = page === "home" ? "" : page;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      const validPages: Page[] = ["home", "studio", "marketplace", "dashboard", "analytics"];
+      if (validPages.includes(hash as Page)) {
+        setCurrentPage(hash as Page);
+      } else {
+        setCurrentPage("home");
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case "studio":
+        return <StudioPage lang={language} />;
+      case "marketplace":
+        return <MarketplacePage lang={language} />;
+      case "dashboard":
+        return <DashboardPage lang={language} />;
+      case "analytics":
+        return <AnalyticsPage lang={language} />;
+      default:
+        return <LandingPage lang={language} onNavigate={navigate} />;
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Navbar
+        currentPage={currentPage}
+        onNavigate={navigate}
+        language={language}
+        onLanguageToggle={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
       />
-    );
-  }
+      <DemoBar
+        onNavigate={navigate}
+        onOpenPehchan={() => setIsPehchanOpen(true)}
+        currentPage={currentPage}
+      />
+      <main style={{ flex: 1 }}>
+        {renderPage()}
+      </main>
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "24px",
+          color: "var(--text-tertiary)",
+          fontSize: "12px",
+          borderTop: "1px solid var(--border)",
+          background: "rgba(10, 15, 25, 0.95)",
+        }}
+      >
+        <p>
+          🪔 KalaSetu (कलासेतु) • Smart India Hackathon 2024 Grand Finale • PS ID: 26090
+        </p>
+        <p style={{ marginTop: "4px" }}>
+          Ministry of Social Justice & Empowerment (MoSJE) • Empowering Traditional Artisan Communities
+        </p>
+      </footer>
 
-  return <Gallery />;
+      {/* Sovereign Pehchan Smart ID Modal */}
+      <PehchanModal
+        isOpen={isPehchanOpen}
+        onClose={() => setIsPehchanOpen(false)}
+      />
+    </div>
+  );
 }
 
 export default App;

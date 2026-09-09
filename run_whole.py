@@ -423,19 +423,21 @@ def verify_and_install_system_and_libraries(
 # ==============================================================================
 # Mission Control Dashboard
 # ==============================================================================
-def print_mission_control(backend_type: str, backend_port: int, frontend_port: int):
+def print_mission_control(backend_type: str, backend_port: int, frontend_mode: str, web_port: int, mobile_port: int):
     api_title = "Node.js Express Gateway" if backend_type == "node" else "Python FastAPI Microservice"
     docs_line = f"║  📚 API Swagger Docs : {C.B_CYAN}http://localhost:{backend_port}/docs{C.RESET}{' ' * (37 - len(str(backend_port)))}║\n" if backend_type == "python" else ""
     
+    web_line = f"║  💻 Desktop Web App  : {C.B_GREEN}http://localhost:{web_port}{C.RESET}{' ' * (37 - len(str(web_port)))}║\n" if frontend_mode in ["desktop", "both"] else ""
+    mobile_line = f"║  📱 Mobile Web Client : {C.B_MAGENTA}http://localhost:{mobile_port}{C.RESET}{' ' * (37 - len(str(mobile_port)))}║\n" if frontend_mode in ["mobile", "both"] else ""
+
     print(f"""
 {C.B_GREEN}╔════════════════════════════════════════════════════════════════════════════════╗
 ║               🪔 KalaSetu (कलासेतु) • ALL SYSTEMS OPERATIONAL                 ║
 ╠════════════════════════════════════════════════════════════════════════════════╣
-║  📱 Mobile Web Client : {C.B_MAGENTA}http://localhost:{frontend_port}{C.RESET}{' ' * (37 - len(str(frontend_port)))}║
-║  ⚙️  API Engine ({backend_type.upper()})  : {C.B_CYAN}http://localhost:{backend_port}{C.RESET}{' ' * (37 - len(str(backend_port)))}║
+{web_line}{mobile_line}║  ⚙️  API Gateway ({backend_type.upper()}) : {C.B_CYAN}http://localhost:{backend_port}{C.RESET}{' ' * (37 - len(str(backend_port)))}║
 ║  🏥 API Health Probe  : {C.B_WHITE}http://localhost:{backend_port}/api/healthz{C.RESET}{' ' * (25 - len(str(backend_port)))}║
 {docs_line}║  📦 Backend Runtime   : {C.B_YELLOW}{api_title}{C.RESET}{' ' * (37 - len(api_title))}║
-║  📶 Mobile Testing    : Scan Metro QR code below using Expo Go on Android/iOS  ║
+║  🎯 Stitch Design UI  : Light & Colourful "KalaSetu Craft Modernity" Theme     ║
 ╚════════════════════════════════════════════════════════════════════════════════╝{C.RESET}
 {C.DIM}👉 Tip: Press {C.B_WHITE}Ctrl + C{C.DIM} anytime to safely shut down all services.{C.RESET}
 """, flush=True)
@@ -477,6 +479,12 @@ def main():
         help="Backend runtime to launch: 'node' (default Express), 'python' (FastAPI), or 'both' (hybrid mesh).",
     )
     parser.add_argument(
+        "--frontend",
+        choices=["desktop", "mobile", "both"],
+        default="desktop",
+        help="Frontend client to launch: 'desktop' (Vite Stitch Web App), 'mobile' (Expo App), or 'both'.",
+    )
+    parser.add_argument(
         "--port-backend",
         type=int,
         default=3000,
@@ -485,13 +493,20 @@ def main():
     parser.add_argument(
         "--port-frontend",
         type=int,
-        default=8082,
-        help="Port for the Expo mobile web dev server (default: 8082).",
+        default=5173,
+        help="Port for the primary frontend dev server (default: 5173 for desktop, 8082 for mobile).",
     )
     parser.add_argument(
         "--open",
         action="store_true",
-        help="Automatically open the frontend in your default browser once healthy.",
+        default=True,
+        help="Automatically open the frontend in your default browser once healthy (default: True).",
+    )
+    parser.add_argument(
+        "--no-open",
+        dest="open",
+        action="store_false",
+        help="Do not open browser automatically.",
     )
     parser.add_argument(
         "--skip-build",
@@ -501,7 +516,7 @@ def main():
     parser.add_argument(
         "--clean",
         action="store_true",
-        help="Forcefully kill any existing processes using ports 3000 or 8082 before launch.",
+        help="Forcefully kill any existing processes using required ports before launch.",
     )
     parser.add_argument(
         "-y", "--yes",
@@ -620,47 +635,71 @@ def main():
         log_warn("Backend health check timed out. Proceeding to launch frontend anyway...")
 
     # --------------------------------------------------------------------------
-    # 3. Launch Frontend (Expo SDK 57 Mobile App)
+    # 3. Launch Frontend (Desktop Web App / Mobile App / Both)
     # --------------------------------------------------------------------------
-    market_dir = os.path.join(WORKSPACE_ROOT, "artifacts", "artisan-market")
-    frontend_env = os.environ.copy()
-    frontend_env["PORT"] = str(args.port_frontend)
-    frontend_env["EXPO_PUBLIC_DOMAIN"] = f"localhost:{args.port_backend}"
-    frontend_env["EXPO_PUBLIC_API_URL"] = f"http://localhost:{args.port_backend}"
+    web_port = args.port_frontend if args.frontend != "mobile" else 5173
+    mobile_port = args.port_frontend if args.frontend == "mobile" else 8082
 
-    log_orchestrator(f"Launching Expo Mobile Development Server on port {args.port_frontend}...")
-    log_system("Streaming live frontend logs (Metro bundler, routes, UI events) to terminal below:")
+    # Launch Desktop Web App (Vite React - Stitch Design)
+    if args.frontend in ["desktop", "both"]:
+        web_dir = os.path.join(WORKSPACE_ROOT, "artifacts", "mockup-sandbox")
+        log_orchestrator(f"Launching Stitch Desktop Web Application on port {web_port}...")
+        log_system("Streaming live desktop frontend events below:")
+        
+        web_cmd = f"npx vite --port {web_port} --host 0.0.0.0"
+        web_proc = subprocess.Popen(
+            web_cmd,
+            cwd=web_dir,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        running_processes.append(web_proc)
+        threading.Thread(
+            target=stream_logs,
+            args=(web_proc.stdout, "[FRONTEND:DESKTOP]", C.B_MAGENTA, True),
+            daemon=True,
+        ).start()
 
-    expo_cmd = f"npx expo start --localhost --port {args.port_frontend}"
-    frontend_proc = subprocess.Popen(
-        expo_cmd,
-        cwd=market_dir,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-        env=frontend_env,
-    )
-    running_processes.append(frontend_proc)
-    
-    # Stream frontend logs with distinct Bright Magenta badge and live styling
-    threading.Thread(
-        target=stream_logs,
-        args=(frontend_proc.stdout, "[FRONTEND:EXPO]", C.B_MAGENTA, True),
-        daemon=True,
-    ).start()
+    # Launch Mobile App (Expo)
+    if args.frontend in ["mobile", "both"]:
+        market_dir = os.path.join(WORKSPACE_ROOT, "artifacts", "artisan-market")
+        frontend_env = os.environ.copy()
+        frontend_env["PORT"] = str(mobile_port)
+        frontend_env["EXPO_PUBLIC_DOMAIN"] = f"localhost:{args.port_backend}"
+        frontend_env["EXPO_PUBLIC_API_URL"] = f"http://localhost:{args.port_backend}"
+
+        log_orchestrator(f"Launching Expo Mobile Development Server on port {mobile_port}...")
+        expo_cmd = f"npx expo start --localhost --port {mobile_port}"
+        mobile_proc = subprocess.Popen(
+            expo_cmd,
+            cwd=market_dir,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            env=frontend_env,
+        )
+        running_processes.append(mobile_proc)
+        threading.Thread(
+            target=stream_logs,
+            args=(mobile_proc.stdout, "[FRONTEND:MOBILE]", C.B_YELLOW, True),
+            daemon=True,
+        ).start()
 
     # Display HUD Mission Control
     time.sleep(2)
-    print_mission_control(args.backend, args.port_backend, args.port_frontend)
+    print_mission_control(args.backend, args.port_backend, args.frontend, web_port, mobile_port)
 
     # Automatically open browser if requested
     if args.open:
-        web_url = f"http://localhost:{args.port_frontend}"
-        log_orchestrator(f"Opening default web browser to {web_url}...")
+        primary_url = f"http://localhost:{web_port}" if args.frontend in ["desktop", "both"] else f"http://localhost:{mobile_port}"
+        log_orchestrator(f"Opening default web browser to {primary_url}...")
         time.sleep(1.5)
-        webbrowser.open(web_url)
+        webbrowser.open(primary_url)
 
     # --------------------------------------------------------------------------
     # 4. Keep Main Thread Alive & Supervise Worker Processes

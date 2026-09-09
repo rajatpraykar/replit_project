@@ -1,25 +1,24 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
+const rawPort = process.env["PORT"] ?? "3000";
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
+// Express 5 app.listen() returns the server, callback has no error param.
+// Use the 'error' event on the server for robust error handling.
+const server = app.listen(port, () => {
+  logger.info({ port }, "🪔 KalaSetu API Gateway is live");
+});
 
-  logger.info({ port }, "Server listening");
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    logger.error({ port }, `Port ${port} is already in use. Kill the existing process or use a different port.`);
+  } else {
+    logger.error({ err }, "Server startup error");
+  }
+  process.exit(1);
 });
