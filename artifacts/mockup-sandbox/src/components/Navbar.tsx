@@ -8,6 +8,8 @@ interface NavbarProps {
   language: "en" | "hi";
   onLanguageToggle: () => void;
   onOpenPehchan?: () => void;
+  onOpenAuth?: () => void;
+  currentUser?: { name: string; pehchanId: string };
 }
 
 const NAV_ITEMS: { key: Page; labelEn: string; labelHi: string }[] = [
@@ -24,6 +26,8 @@ export default function Navbar({
   language,
   onLanguageToggle,
   onOpenPehchan,
+  onOpenAuth,
+  currentUser,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -87,12 +91,12 @@ export default function Navbar({
             </span>
           </button>
 
-          {/* B2B Login Button */}
+          {/* Account / Login Button */}
           <button
-            onClick={() => onNavigate("marketplace")}
-            className="hidden md:inline-flex items-center justify-center px-3.5 py-1.5 rounded-full font-label-sm text-xs font-semibold text-[#3D405B] bg-transparent hover:bg-surface-container transition-all"
+            onClick={onOpenAuth}
+            className="hidden md:inline-flex items-center justify-center px-3.5 py-1.5 rounded-full font-label-sm text-xs font-semibold text-[#3D405B] bg-transparent hover:bg-surface-container transition-all cursor-pointer"
           >
-            B2B Login
+            {currentUser?.name ? `👤 ${currentUser.name}` : "B2B Login"}
           </button>
 
           {/* Primary CTA button */}
@@ -107,7 +111,7 @@ export default function Navbar({
           <div
             onClick={onOpenPehchan}
             className="relative flex items-center justify-center p-0.5 rounded-full bg-primary-container cursor-pointer hover:ring-2 hover:ring-[#F5A623] transition-all"
-            title="View Pehchan Smart ID (कारीगर पहचान पत्र)"
+            title="View Sovereign Pehchan ID"
           >
             <img
               alt="Artisan Profile"
@@ -164,6 +168,18 @@ export default function Navbar({
           <div className="pt-2 border-t border-surface-container flex items-center justify-between">
             <button
               onClick={() => {
+                onOpenAuth?.();
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 py-2 px-3 rounded-lg bg-surface-container text-xs font-semibold text-on-surface"
+            >
+              <span className="material-symbols-outlined text-base text-primary">
+                account_circle
+              </span>
+              <span>{currentUser?.name || "Artisan Login"}</span>
+            </button>
+            <button
+              onClick={() => {
                 onOpenPehchan?.();
                 setMobileMenuOpen(false);
               }}
@@ -172,16 +188,7 @@ export default function Navbar({
               <span className="material-symbols-outlined text-base text-tertiary">
                 badge
               </span>
-              <span>Pehchan Smart ID</span>
-            </button>
-            <button
-              onClick={() => {
-                onNavigate("marketplace");
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs font-semibold text-secondary hover:underline"
-            >
-              B2B Wholesale Portal →
+              <span>Pehchan ID</span>
             </button>
           </div>
         </div>

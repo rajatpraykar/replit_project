@@ -5,9 +5,16 @@ interface DashboardPageProps {
   lang: "en" | "hi";
   onNavigate?: (page: Page) => void;
   onOpenPehchan?: () => void;
+  currentUser?: {
+    name: string;
+    pehchanId: string;
+    cluster?: string;
+    state?: string;
+    category?: string;
+  };
 }
 
-export default function DashboardPage({ lang, onNavigate, onOpenPehchan }: DashboardPageProps) {
+export default function DashboardPage({ lang, onNavigate, onOpenPehchan, currentUser }: DashboardPageProps) {
   const [activeTab, setActiveTab] = useState<"6M" | "3M" | "1Y">("6M");
   const [searchTerm, setSearchTerm] = useState("");
   const [inquiryAccepted, setInquiryAccepted] = useState(false);
@@ -23,7 +30,7 @@ export default function DashboardPage({ lang, onNavigate, onOpenPehchan }: Dashb
               <div className="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-primary-container via-secondary to-primary shadow-[0_0_16px_rgba(245,166,35,0.4)]">
                 <img
                   className="w-full h-full rounded-full object-cover"
-                  alt="Radha Devi portrait"
+                  alt="Artisan portrait"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuAambBaoFH2pJzHXBhgnssluztDZbxfMvUb6j1jyX4WejpiUaiOlYGBr_qCMUcWAdG_sImqKCMU9pOwiqKoNt_uo8_mPWAKJ4oNhtibgEsxb16NLeVPzbPBDR7rYhk3G1RN_Ip5nKu8WAPFbnthALhrz7Oywzgiouxa8ch43VtQ3DyL2j3LNGQXnIEFjA9nQwQrmHCX9V9EisUQdR-IL5Q53H8qhmMWNvpaKOTnYHM3cCfxefXYB4M2Uw"
                 />
               </div>
@@ -36,10 +43,12 @@ export default function DashboardPage({ lang, onNavigate, onOpenPehchan }: Dashb
                 </span>
               </span>
             </div>
-            <h2 className="font-headline-sm text-base text-on-surface font-bold">Radha Devi</h2>
+            <h2 className="font-headline-sm text-base text-on-surface font-bold">
+              {currentUser?.name || "Radha Devi"}
+            </h2>
             <div className="flex items-center gap-1 text-on-surface-variant font-label-sm text-xs mt-0.5">
               <span className="material-symbols-outlined text-[14px] text-secondary">location_on</span>
-              <span>Varanasi, UP</span>
+              <span>{currentUser?.cluster || "Varanasi, UP"}</span>
             </div>
             <button
               onClick={onOpenPehchan}
@@ -48,10 +57,10 @@ export default function DashboardPage({ lang, onNavigate, onOpenPehchan }: Dashb
               <span>Pehchan Verified ✓</span>
             </button>
             <div className="mt-1 font-code-sm text-[10px] text-on-surface-variant/70 tracking-wider">
-              ID: KST-UP-2024-00142
+              ID: {currentUser?.pehchanId || "KST-UP-2024-00142"}
             </div>
             <div className="mt-1 text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">
-              SC Category • GI: Banarasi
+              {currentUser?.category || "Artisan"} • GI Cluster
             </div>
           </div>
 

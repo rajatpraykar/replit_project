@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import DemoBar from "./components/DemoBar";
 import Footer from "./components/Footer";
 import PehchanModal from "./components/PehchanModal";
+import AuthModal, { type ArtisanProfile } from "./components/AuthModal";
 import LandingPage from "./pages/LandingPage";
 import StudioPage from "./pages/StudioPage";
 import MarketplacePage from "./pages/MarketplacePage";
@@ -11,10 +12,32 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 
 export type Page = "home" | "studio" | "marketplace" | "dashboard" | "analytics";
 
+const DEFAULT_USER: ArtisanProfile = {
+  id: "artisan_demo_01",
+  name: "Radha Devi",
+  phone: "+91 98765 43210",
+  state: "Uttar Pradesh",
+  district: "Varanasi",
+  craftCluster: "Varanasi Handloom & Banarasi Silk",
+  socialCategory: "SC Category • Master Weaver",
+  udyamNumber: "UDYAM-UP-14-0028911",
+  pehchanId: "KST-UP-2024-00142",
+  aadhaarVerified: true,
+  verifiedBy: "Ministry of Social Justice & Empowerment Cluster Cell",
+};
+
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
   const [language, setLanguage] = useState<"en" | "hi">("en");
   const [isPehchanOpen, setIsPehchanOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<ArtisanProfile>(() => {
+    try {
+      const saved = localStorage.getItem("kalasetu_current_user");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_USER;
+  });
 
   // Hash-based routing for cross-browser compatibility
   const navigate = useCallback((page: Page) => {
@@ -38,6 +61,13 @@ function App() {
     return () => window.removeEventListener("hashchange", handleHash);
   }, []);
 
+  const handleUserChange = (newUser: ArtisanProfile) => {
+    setCurrentUser(newUser);
+    try {
+      localStorage.setItem("kalasetu_current_user", JSON.stringify(newUser));
+    } catch {}
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "studio":
@@ -50,6 +80,13 @@ function App() {
             lang={language}
             onNavigate={navigate}
             onOpenPehchan={() => setIsPehchanOpen(true)}
+            currentUser={{
+              name: currentUser.name,
+              pehchanId: currentUser.pehchanId,
+              cluster: `${currentUser.district}, ${currentUser.state}`,
+              state: currentUser.state,
+              category: currentUser.socialCategory,
+            }}
           />
         );
       case "analytics":
@@ -68,6 +105,11 @@ function App() {
         language={language}
         onLanguageToggle={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
         onOpenPehchan={() => setIsPehchanOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        currentUser={{
+          name: currentUser.name,
+          pehchanId: currentUser.pehchanId,
+        }}
       />
 
       {/* Sticky Demo Bar */}
@@ -87,6 +129,13 @@ function App() {
 
       {/* Sovereign Pehchan Smart ID Modal */}
       <PehchanModal isOpen={isPehchanOpen} onClose={() => setIsPehchanOpen(false)} />
+
+      {/* Artisan Auth & Registration Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onUserChanged={handleUserChange}
+      />
     </div>
   );
 }

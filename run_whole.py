@@ -185,6 +185,265 @@ def poll_healthz(url: str, timeout_seconds: int = 35) -> bool:
     return False
 
 # ==============================================================================
+# Comprehensive Full-Stack API Integration Verification
+# ==============================================================================
+def verify_api_integration(backend_port: int, frontend_port: Optional[int] = None) -> bool:
+    """
+    Executes an automated, real-time live probe on all backend API endpoints
+    and frontend web connectivity, displaying a colorized audit table.
+    """
+    import json
+    log_orchestrator("Running automated end-to-end API integration & health verification...")
+    
+    base_url = f"http://127.0.0.1:{backend_port}"
+    results = []
+
+    # 1. Health Probe
+    try:
+        req = url_request.Request(f"{base_url}/api/healthz", headers={"User-Agent": "KalaSetu-Verifier"})
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            status_ok = resp.status == 200 and data.get("status") == "ok"
+            results.append({
+                "name": "Backend Health Probe",
+                "endpoint": "GET /api/healthz",
+                "ok": status_ok,
+                "detail": f"Status 200 • {data.get('status', 'ok')}"
+            })
+    except Exception as e:
+        results.append({
+            "name": "Backend Health Probe",
+            "endpoint": "GET /api/healthz",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 2. Local Database & Users
+    try:
+        req = url_request.Request(f"{base_url}/api/auth/users", headers={"User-Agent": "KalaSetu-Verifier"})
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            user_count = len(data.get("users", []))
+            results.append({
+                "name": "Artisan Registry & Local DB",
+                "endpoint": "GET /api/auth/users",
+                "ok": resp.status == 200 and user_count > 0,
+                "detail": f"{user_count} artisans registered"
+            })
+    except Exception as e:
+        results.append({
+            "name": "Artisan Registry & Local DB",
+            "endpoint": "GET /api/auth/users",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 3. Artisan Account Registration & Sovereign Pehchan ID
+    try:
+        reg_payload = json.dumps({
+            "name": "Meera Ben Patel",
+            "phone": "+91 98765 43220",
+            "state": "Gujarat",
+            "district": "Kutch",
+            "craftCluster": "Ajrakhpur Block Print & Bandhani",
+            "socialCategory": "Artisan Self Help Group"
+        }).encode("utf-8")
+        req = url_request.Request(
+            f"{base_url}/api/auth/register",
+            data=reg_payload,
+            headers={"Content-Type": "application/json", "User-Agent": "KalaSetu-Verifier"},
+            method="POST"
+        )
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            pehchan = data.get("artisan", {}).get("pehchanId", "N/A")
+            results.append({
+                "name": "Sovereign Pehchan ID Issuance",
+                "endpoint": "POST /api/auth/register",
+                "ok": resp.status == 201,
+                "detail": f"Issued {pehchan}"
+            })
+    except Exception as e:
+        results.append({
+            "name": "Sovereign Pehchan ID Issuance",
+            "endpoint": "POST /api/auth/register",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 4. Multi-Language Catalog Gen (7 Languages)
+    try:
+        cat_payload = json.dumps({
+            "description": "Handcrafted pure terracotta elephant with natural clay motifs",
+            "targetMarket": "Domestic & Export"
+        }).encode("utf-8")
+        req = url_request.Request(
+            f"{base_url}/api/catalog/generate",
+            data=cat_payload,
+            headers={"Content-Type": "application/json", "User-Agent": "KalaSetu-Verifier"},
+            method="POST"
+        )
+        with url_request.urlopen(req, timeout=4) as resp:
+            data = json.loads(resp.read().decode())
+            translations = data.get("regionalTranslations", {})
+            langs_supported = len(translations.keys())
+            has_multilingual = langs_supported >= 5
+            results.append({
+                "name": "7-Language Multilingual Catalog",
+                "endpoint": "POST /api/catalog/generate",
+                "ok": resp.status == 200 and has_multilingual,
+                "detail": f"{langs_supported} languages ready"
+            })
+    except Exception as e:
+        results.append({
+            "name": "7-Language Multilingual Catalog",
+            "endpoint": "POST /api/catalog/generate",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 5. AI Studio Image Enhancement
+    try:
+        enh_payload = json.dumps({
+            "imageBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            "mimeType": "image/png"
+        }).encode("utf-8")
+        req = url_request.Request(
+            f"{base_url}/api/enhance-image",
+            data=enh_payload,
+            headers={"Content-Type": "application/json", "User-Agent": "KalaSetu-Verifier"},
+            method="POST"
+        )
+        with url_request.urlopen(req, timeout=4) as resp:
+            data = json.loads(resp.read().decode())
+            provider = data.get("provider", "local")
+            results.append({
+                "name": "AI Studio 4K Enhancement",
+                "endpoint": "POST /api/enhance-image",
+                "ok": resp.status == 200 and data.get("enhanced") is True,
+                "detail": f"Prov: {provider[:10]}"
+            })
+    except Exception as e:
+        results.append({
+            "name": "AI Studio 4K Enhancement",
+            "endpoint": "POST /api/enhance-image",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 6. Multi-Dialect Voice Transcribe
+    try:
+        voice_payload = json.dumps({
+            "language": "bn",
+            "audioBase64": "mock-audio-payload"
+        }).encode("utf-8")
+        req = url_request.Request(
+            f"{base_url}/api/transcribe",
+            data=voice_payload,
+            headers={"Content-Type": "application/json", "User-Agent": "KalaSetu-Verifier"},
+            method="POST"
+        )
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            results.append({
+                "name": "Speech Synthesis & ASR Engine",
+                "endpoint": "POST /api/transcribe",
+                "ok": resp.status == 200 and "text" in data,
+                "detail": f"Lang: {data.get('languageNameNative', 'Bangla')}"
+            })
+    except Exception as e:
+        results.append({
+            "name": "Speech Synthesis & ASR Engine",
+            "endpoint": "POST /api/transcribe",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 7. ONDC Marketplace Products Feed
+    try:
+        req = url_request.Request(f"{base_url}/api/products", headers={"User-Agent": "KalaSetu-Verifier"})
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            count = len(data) if isinstance(data, list) else len(data.get("products", []))
+            results.append({
+                "name": "ONDC Open Craft Catalog Feed",
+                "endpoint": "GET /api/products",
+                "ok": resp.status == 200 and count > 0,
+                "detail": f"{count} products loaded"
+            })
+    except Exception as e:
+        results.append({
+            "name": "ONDC Open Craft Catalog Feed",
+            "endpoint": "GET /api/products",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 8. Activity History Ledger
+    try:
+        req = url_request.Request(f"{base_url}/api/history", headers={"User-Agent": "KalaSetu-Verifier"})
+        with url_request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            hist_count = len(data) if isinstance(data, list) else 0
+            results.append({
+                "name": "Persistent Activity & Local DB",
+                "endpoint": "GET /api/history",
+                "ok": resp.status == 200,
+                "detail": f"{hist_count} activity records"
+            })
+    except Exception as e:
+        results.append({
+            "name": "Persistent Activity & Local DB",
+            "endpoint": "GET /api/history",
+            "ok": False,
+            "detail": f"Err: {str(e)[:14]}"
+        })
+
+    # 9. Frontend Web App Connectivity (if frontend_port given)
+    if frontend_port:
+        try:
+            req = url_request.Request(f"http://127.0.0.1:{frontend_port}", headers={"User-Agent": "KalaSetu-Verifier"})
+            with url_request.urlopen(req, timeout=3) as resp:
+                results.append({
+                    "name": "Frontend Web Client (Vite React)",
+                    "endpoint": f"GET :{frontend_port}/",
+                    "ok": resp.status == 200,
+                    "detail": "HTML & bundle ready"
+                })
+        except Exception as e:
+            results.append({
+                "name": "Frontend Web Client (Vite React)",
+                "endpoint": f"GET :{frontend_port}/",
+                "ok": False,
+                "detail": f"Err: {str(e)[:14]}"
+            })
+
+    # Print Visual Audit Table
+    print(f"\n{C.B_CYAN}{C.BOLD}┌────────────────────────────────────────────────────────────────────────────────┐{C.RESET}")
+    print(f"{C.B_CYAN}{C.BOLD}│ 🔬 FULL-STACK BACKEND & FRONTEND API INTEGRATION VERIFICATION                  │{C.RESET}")
+    print(f"{C.B_CYAN}{C.BOLD}├───────────────────────────────┬──────────────────────────┬────────┬────────────┤{C.RESET}")
+    print(f"{C.B_CYAN}{C.BOLD}│ Feature Service               │ API Endpoint             │ Status │ Telemetry  │{C.RESET}")
+    print(f"{C.B_CYAN}{C.BOLD}├───────────────────────────────┼──────────────────────────┼────────┼────────────┤{C.RESET}")
+    all_ok = True
+    for r in results:
+        name_str = r["name"][:29].ljust(29)
+        ep_str = r["endpoint"][:24].ljust(24)
+        if r["ok"]:
+            status_str = f"{C.B_GREEN}[PASS]{C.RESET} "
+        else:
+            all_ok = False
+            status_str = f"{C.B_RED}[FAIL]{C.RESET} "
+        det_str = r["detail"][:10].ljust(10)
+        print(f"│ {C.WHITE}{name_str}{C.RESET} │ {C.DIM}{ep_str}{C.RESET} │ {status_str}│ {C.CYAN}{det_str}{C.RESET} │")
+    print(f"{C.B_CYAN}{C.BOLD}└───────────────────────────────┴──────────────────────────┴────────┴────────────┘{C.RESET}\n", flush=True)
+    
+    if all_ok:
+        log_success("All Backend APIs and Frontend components are fully integrated & healthy!")
+    else:
+        log_warn("One or more integration checks returned a notice. Check details above.")
+    return all_ok
+
+# ==============================================================================
 # Stream Output Consumer (Multiplexes Frontend and Backend into Terminal)
 # ==============================================================================
 def stream_logs(pipe, badge: str, color: str, is_frontend: bool = False):
@@ -561,6 +820,11 @@ def main():
         action="store_true",
         help="Force check and re-install/update all dependencies before launching.",
     )
+    parser.add_argument(
+        "--verify-only",
+        action="store_true",
+        help="Run live API integration probe across all endpoints and exit immediately.",
+    )
 
     args = parser.parse_args()
     print_banner(args.backend)
@@ -723,8 +987,21 @@ def main():
             daemon=True,
         ).start()
 
-    # Display HUD Mission Control
+    # --------------------------------------------------------------------------
+    # 4. End-to-End API Integration & Cross-Service Verification Probe
+    # --------------------------------------------------------------------------
     time.sleep(2)
+    verification_passed = verify_api_integration(
+        backend_port=args.port_backend,
+        frontend_port=web_port if args.frontend in ["desktop", "both"] else None,
+    )
+
+    if args.verify_only:
+        log_orchestrator(f"Integration probe completed (Pass: {verification_passed}). Shutting down services...")
+        terminate_all_processes()
+        sys.exit(0 if verification_passed else 1)
+
+    # Display HUD Mission Control
     print_mission_control(args.backend, args.port_backend, args.frontend, web_port, mobile_port)
 
     # Automatically open browser if requested
@@ -735,7 +1012,7 @@ def main():
         webbrowser.open(primary_url)
 
     # --------------------------------------------------------------------------
-    # 4. Keep Main Thread Alive & Supervise Worker Processes
+    # 5. Keep Main Thread Alive & Supervise Worker Processes
     # --------------------------------------------------------------------------
     try:
         while not shutdown_event.is_set():

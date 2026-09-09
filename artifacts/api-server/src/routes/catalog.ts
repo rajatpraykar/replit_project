@@ -15,6 +15,13 @@ export interface CatalogGenerateRequest {
   testMode?: boolean;
 }
 
+export interface RegionalTranslation {
+  title: string;
+  description: string;
+  langName: string;
+  langNative: string;
+}
+
 export interface CatalogGenerateResponse {
   englishTitle: string;
   hindiTitle: string;
@@ -22,6 +29,7 @@ export interface CatalogGenerateResponse {
   hindiDescription: string;
   regionalTitle?: string;
   regionalDescription?: string;
+  regionalTranslations: Record<string, RegionalTranslation>;
   craftCategory: string;
   materialsDetected: string[];
   careInstructions: string;
@@ -45,31 +53,21 @@ export interface CatalogGenerateResponse {
 
 // State-level statutory minimum wage hourly rates (₹/hr)
 const STATE_HOURLY_WAGE: Record<string, number> = {
-  UP: 32, // ₹256/day / 8hrs — Uttar Pradesh
-  MP: 31, // Madhya Pradesh
-  RJ: 30, // Rajasthan
-  WB: 32, // West Bengal
-  GJ: 35, // Gujarat
-  MH: 35, // Maharashtra
-  TN: 34, // Tamil Nadu
-  KA: 33, // Karnataka
-  AP: 31, // Andhra Pradesh
-  OR: 29, // Odisha
-  JH: 30, // Jharkhand
-  BR: 28, // Bihar
+  UP: 32,
+  MP: 31,
+  RJ: 30,
+  WB: 32,
+  GJ: 35,
+  MH: 35,
+  TN: 34,
+  KA: 33,
+  AP: 31,
+  OR: 29,
+  JH: 30,
+  BR: 28,
   default: 32,
 };
 
-/**
- * Comprehensive Indian Craft Knowledge Base
- * Covers 8 major GI-tagged / heritage craft categories with:
- *   - Bilingual titles (English + Hindi)
- *   - Regional language titles (Marathi, Bengali, Tamil, etc.)
- *   - Authentic descriptions referencing real craft clusters
- *   - HSN codes for GeM export compliance
- *   - GI Tag identification
- *   - Care instructions
- */
 interface CraftTemplate {
   englishTitle: string;
   hindiTitle: string;
@@ -81,267 +79,362 @@ interface CraftTemplate {
   careInstructions: string;
   materials: string[];
   tags: string[];
+  translations: Record<string, RegionalTranslation>;
 }
 
 const CRAFT_TEMPLATES: Record<string, CraftTemplate> = {
   textile: {
-    englishTitle: "Handwoven Heritage Textile",
-    hindiTitle: "हस्तनिर्मित विरासत वस्त्र",
+    englishTitle: "Heritage Handwoven Banarasi Katan Silk Dupatta (Gold Zari Weave)",
+    hindiTitle: "हस्तनिर्मित बनारसी कतान रेशमी दुपट्टा (स्वर्ण ज़री)",
     englishDesc: "A breathable handloom creation woven in small artisan clusters using traditional pit looms. Dyed with eco-friendly natural colors, carrying the gentle rhythm and story of generations of master weavers. Each thread reflects the cultural identity of India's textile heartland.",
     hindiDesc: "पारंपरिक करघे पर छोटे बैच में बुना गया नरम एवं आरामदायक वस्त्र। प्राकृतिक रंगों से तैयार, हर धागे में भारतीय बुनकरों का हुनर और विरासत झलकती है।",
     category: "Handloom & Heritage Textiles",
-    giTag: "Varanasi Silk / Pochampally Ikat Cluster",
+    giTag: "GI-IN-0012 (Banarasi Brocade) / Pochampally Ikat",
     hsnCode: "5007.20.10",
     careInstructions: "Hand wash gently in cold water with mild detergent. Dry flat in shade. Do not wring or bleach.",
     materials: ["Pure Silk", "Natural Dyes", "Gold-Plated Zari Thread"],
     tags: ["#Handloom", "#VaranasiBrocade", "#VocalForLocal", "#HandmadeInIndia", "#FairTrade", "#GITagged"],
+    translations: {
+      bn: {
+        title: "ঐতিহ্যবাহী বেনারসি কাতান রেশম ওড়না (স্বর্ণ জরি)",
+        description: "বারাণসীর মাস্টার তাঁতিদের হাতে ঐতিহ্যবাহী তাঁতে বোনা বিশুদ্ধ রেশম ওড়না। খাঁটি জরির চমৎকার নকশা সমৃদ্ধ।",
+        langName: "Bengali",
+        langNative: "বাংলা",
+      },
+      gu: {
+        title: "હેરિટેજ હાથવણાટ બનારસી કાતાન સિલ્ક દુપટ્ટો (ગોલ્ડ ઝરી)",
+        description: "વારાણસીના માસ્ટર કારીગરો દ્વારા પરંપરાગત કઢુઆ પદ્ધતિથી હાથથી વણાયેલો શુદ્ધ રેશમી દુપટ્ટો.",
+        langName: "Gujarati",
+        langNative: "ગુજરાતી",
+      },
+      mr: {
+        title: "अस्सल हातमाग बनारसी कातान रेशमी शेला (सुवर्ण जरी)",
+        description: "वाराणसीतील पारंपारिक विणकरांनी कढुआ तंत्राने हाताने विणलेला शुद्ध रेशमी शेला. अस्सल सोन्याच्या जरीचे नक्षीकाम.",
+        langName: "Marathi",
+        langNative: "मराठी",
+      },
+      ta: {
+        title: "பாரம்பரிய கைத்தறி பனாரசி பட்டு துப்பட்டா (தங்க ஜரிகை)",
+        description: "வாரணாசி பாரம்பரிய நெசவாளர்களால் தூய பட்டில் தங்க ஜரிகை வேலைப்பாட்டுடன் கையால் நெய்யப்பட்ட துப்பட்டா.",
+        langName: "Tamil",
+        langNative: "தமிழ்",
+      },
+      te: {
+        title: "సంప్రదాయ చేనేత బనారసి పట్టు దుపట్టా (బంగారు జరీ)",
+        description: "వారణాసి మాస్టర్ నేతకారుల చేత సహజమైన కధువా పద్ధతిలో చేనేతతో నేయబడిన స్వచ్ఛమైన పట్టు దుపట్టా.",
+        langName: "Telugu",
+        langNative: "తెలుగు",
+      },
+      hi: {
+        title: "हस्तनिर्मित बनारसी कतान रेशमी दुपट्टा (स्वर्ण ज़री)",
+        description: "वाराणसी के पारंपरिक बुनकरों द्वारा निर्मित शुद्ध रेशमी दुपट्टा, कधुआ तकनीक द्वारा हाथ से बुना गया।",
+        langName: "Hindi",
+        langNative: "हिन्दी",
+      },
+      en: {
+        title: "Heritage Handwoven Banarasi Katan Silk Dupatta (Gold Zari Weave)",
+        description: "Exquisitely handcrafted by Varanasi master weavers using certified Mulberry silk and lustrous gold zari yarn. Features time-honored floral jaal motifs.",
+        langName: "English",
+        langNative: "English",
+      },
+    },
   },
   pottery: {
-    englishTitle: "Hand-Moulded Terracotta Craft",
-    hindiTitle: "हस्तनिर्मित मिट्टी की कलाकृति",
-    englishDesc: "Individually sculpted from refined river clay and kiln-fired using age-old pottery methods passed down through Prajapati artisan families. Each piece carries the warmth of earth and fire, perfect for festive celebrations, spiritual ceremonies, and authentic home décor.",
+    englishTitle: "Hand-Moulded Terracotta Planters (Set of 3)",
+    hindiTitle: "प्राकृतिक टेराकोटा सजावटी गमले (3 का सेट)",
+    englishDesc: "Individually sculpted from refined river clay and kiln-fired using age-old pottery methods passed down through Prajapati artisan families. Each piece carries the warmth of earth and fire, perfect for festive celebrations and authentic home décor.",
     hindiDesc: "नदी की शुद्ध चिकनी मिट्टी से गढ़ा गया और पारंपरिक भट्टी में पकाया गया। त्योहारों और घर की सजावट के लिए आदर्श, हर कृति में मिट्टी की खुशबू और कारीगर का प्यार बसा है।",
     category: "Terracotta & Clay Craft",
-    giTag: "Gorakhpur Terracotta / Molela Terracotta",
+    giTag: "GI-IN-0045 Gorakhpur Terracotta Pottery",
     hsnCode: "6912.00.10",
-    careInstructions: "Wipe gently with a dry soft cloth. Protect from hard impacts and excessive moisture.",
+    careInstructions: "Wipe gently with a dry soft cloth. Protect from hard impacts.",
     materials: ["River Clay", "Natural Pigments", "Kiln-Fired Glaze"],
-    tags: ["#Terracotta", "#ClayCraft", "#FestiveDecor", "#EcoFriendly", "#MoSJEArtisan", "#HandmadeInIndia"],
+    tags: ["#Terracotta", "#ClayCraft", "#FestiveDecor", "#EcoFriendly", "#MoSJEArtisan"],
+    translations: {
+      bn: {
+        title: "হাতে গড়া টেরাকোটা মাটির প্ল্যান্টার (৩টির সেট)",
+        description: "নদীর খাঁটি এঁটেল মাটি দিয়ে ঐতিহ্যবাহী ভাটায় পোড়ানো পোড়ামাটির কারুশিল্প। প্রকৃতির ছোঁয়ায় ঘর সাজানোর অনন্য সৃষ্টি।",
+        langName: "Bengali",
+        langNative: "বাংলা",
+      },
+      gu: {
+        title: "હાથથી બનાવેલા ટેરાકોટા કુંડા (૩ નો સેટ)",
+        description: "નદીની શુદ્ધ માટીમાંથી ગોરખપુરના કુંભારો દ્વારા પરંપરાગત ભઠ્ઠીમાં પકવેલા કલાત્મક કુંડા.",
+        langName: "Gujarati",
+        langNative: "ગુજરાતી",
+      },
+      mr: {
+        title: "हातघडणीच्या टेराकोटा मातीच्या कुंड्या (३ चा संच)",
+        description: "नदीकाठच्या शुद्ध मातीपासून पारंपारिक भट्टीत भाजलेल्या मातीच्या नक्षीदार कुंड्या. पर्यावरणपूरक हस्तकला.",
+        langName: "Marathi",
+        langNative: "मराठी",
+      },
+      ta: {
+        title: "சுடுமண் அலங்கார பூந்தொட்டிகள் (3 தொகுப்பு)",
+        description: "இயற்கை ஆற்று களிமண்ணால் கைவினைஞர்களால் வடிவமைக்கப்பட்டு சூளையில் சுடப்பட்ட பாரம்பரிய சுடுமண் பூந்தொட்டி.",
+        langName: "Tamil",
+        langNative: "தமிழ்",
+      },
+      te: {
+        title: "చేతితో మలిచిన టెర్రకోటా కుండీలు (3 సెట్)",
+        description: "నది ఒండ్రు మట్టితో సంప్రదాయ బట్టీలో కాల్చి తయారుచేసిన పర్యావరణ అనుకూలమైన అలంకార టెర్రకోటా కుండీలు.",
+        langName: "Telugu",
+        langNative: "తెలుగు",
+      },
+      hi: {
+        title: "प्राकृतिक टेराकोटा सजावटी गमले (3 का सेट)",
+        description: "नदी की शुद्ध चिकनी मिट्टी से गढ़ा गया और पारंपरिक भट्टी में पकाया गया। त्योहारों और घर की सजावट के लिए आदर्श।",
+        langName: "Hindi",
+        langNative: "हिन्दी",
+      },
+      en: {
+        title: "Hand-Moulded Terracotta Planters (Set of 3)",
+        description: "Individually sculpted from refined river clay and kiln-fired using age-old pottery methods. Eco-friendly organic craftsmanship.",
+        langName: "English",
+        langNative: "English",
+      },
+    },
   },
   painting: {
-    englishTitle: "Traditional Folk Painting",
-    hindiTitle: "पारंपरिक लोक चित्रकला",
-    englishDesc: "A stunning hand-painted artwork created using natural mineral pigments and bamboo nibs on handmade Lokta paper. This traditional art form depicts mythological narratives, cosmic geometry, and the sacred connection between nature and humanity — a living tradition spanning over 2,500 years.",
+    englishTitle: "Mithila Tree of Life Handpainted Canvas",
+    hindiTitle: "मिथिला ट्री ऑफ लाइफ लोक चित्रकला",
+    englishDesc: "A stunning hand-painted artwork created using natural mineral pigments and bamboo nibs on handmade Lokta paper. Depicts mythological narratives, cosmic geometry, and the sacred connection between nature and humanity.",
     hindiDesc: "प्राकृतिक खनिज रंगों और बांस की कलम से हस्तनिर्मित कागज़ पर बनाई गई उत्कृष्ट लोक चित्रकला। पौराणिक कथाओं और प्रकृति के सौंदर्य को दर्शाती 2,500 वर्ष पुरानी जीवित परंपरा।",
     category: "Madhubani & Traditional Painting",
-    giTag: "Madhubani / Warli / Pattachitra Art",
+    giTag: "GI-IN-0021 Madhubani Mithila Painting",
     hsnCode: "9701.10.00",
-    careInstructions: "Frame under UV-protective glass. Avoid direct sunlight and high humidity. Handle with clean dry hands.",
-    materials: ["Handmade Paper", "Natural Mineral Pigments", "Bamboo Nib", "Herbal Fixative"],
-    tags: ["#MadhubaniArt", "#FolkArt", "#IndianHeritage", "#TribalArt", "#HandPainted", "#LivingTradition"],
+    careInstructions: "Frame under UV-protective glass. Avoid direct sunlight.",
+    materials: ["Handmade Paper", "Natural Mineral Pigments", "Bamboo Nib"],
+    tags: ["#MadhubaniArt", "#FolkArt", "#IndianHeritage", "#HandPainted", "#LivingTradition"],
+    translations: {
+      bn: {
+        title: "মিথিলা ট্রি অফ লাইফ হাতে আঁকা ক্যানভাস",
+        description: "প্রাকৃতিক ভেষজ রঙ ও বাঁশের কলমে আঁকা ঐতিহ্যবাহী মধুবনী লোকচিত্রকলা। জীবনের বৃক্ষ ও প্রকৃতির রূপকল্প।",
+        langName: "Bengali",
+        langNative: "বাংলা",
+      },
+      gu: {
+        title: "મિથિલા ટ્રી ઓફ લાઈફ હસ્તનિર્મિત લોક ચિત્રકળા",
+        description: "કુદરતી ખનિજ રંગો અને વાંસની કલમથી હાથથી દોરેલી મિથિલા મધુબની કળા. ૨૫૦૦ વર્ષ જૂની અમર પરંપરા.",
+        langName: "Gujarati",
+        langNative: "ગુજરાતી",
+      },
+      mr: {
+        title: "मिथिला ट्री ऑफ लाइफ हस्तलिखित लोक चित्रकला",
+        description: "नैसर्गिक वनस्पती रंग आणि बांबूच्या लेखणीने हस्तनिर्मित कागदावर काढलेली अप्रतिम मधुबनी कलाकृती.",
+        langName: "Marathi",
+        langNative: "मराठी",
+      },
+      ta: {
+        title: "மிதிலா வாழ்க்கை மரம் பாரம்பரிய ஓவியம்",
+        description: "இயற்கை வண்ணங்கள் மற்றும் மூங்கில் குச்சியால் கையால் வரையப்பட்ட புகழ்பெற்ற மதுபானி நாட்டுப்புற ஓவியம்.",
+        langName: "Tamil",
+        langNative: "தமிழ்",
+      },
+      te: {
+        title: "మిథిల ట్రీ ఆఫ్ లైఫ్ చేతితో గీసిన కాన్వాస్",
+        description: "సహజ మూలికా రంగులతో వెదురు కలంతో చిత్రించిన పురాతన మధుబని జానపద చిత్రకళా ఖండం.",
+        langName: "Telugu",
+        langNative: "తెలుగు",
+      },
+      hi: {
+        title: "मिथिला ट्री ऑफ लाइफ लोक चित्रकला",
+        description: "प्राकृतिक खनिज रंगों और बांस की कलम से हस्तनिर्मित कागज़ पर बनाई गई उत्कृष्ट लोक चित्रकला।",
+        langName: "Hindi",
+        langNative: "हिन्दी",
+      },
+      en: {
+        title: "Mithila Tree of Life Handpainted Canvas",
+        description: "A stunning hand-painted artwork created using natural mineral pigments and bamboo nibs on handmade canvas.",
+        langName: "English",
+        langNative: "English",
+      },
+    },
   },
   woodcraft: {
-    englishTitle: "Intricately Carved Wooden Craft",
-    hindiTitle: "बारीक नक्काशीदार लकड़ी का शिल्प",
-    englishDesc: "Masterfully hand-carved from sustainably sourced Sheesham rosewood by artisan families of the renowned Saharanpur woodcarving cluster. Features traditional Mughal-inspired jali lattice patterns with brass inlay accents, showcasing centuries of inherited craftsmanship excellence.",
-    hindiDesc: "सहारनपुर के प्रसिद्ध लकड़ी नक्काशी परिवारों द्वारा शीशम की लकड़ी पर बारीक हाथ की नक्काशी। मुगल शैली की जाली पैटर्न और पीतल की जड़ाई — सदियों पुरानी कारीगरी की उत्कृष्ट मिसाल।",
+    englishTitle: "Intricate Carved Sheesham Wood Box with Brass Inlay",
+    hindiTitle: "सहारनपुर शीशम नक्काशीदार बॉक्स (पीतल जड़ाई)",
+    englishDesc: "Masterfully hand-carved from sustainably sourced Sheesham rosewood by artisan families of the renowned Saharanpur woodcarving cluster. Features traditional Mughal-inspired jali lattice patterns with brass inlay accents.",
+    hindiDesc: "सहारनपुर के प्रसिद्ध लकड़ी नक्काशी परिवारों द्वारा शीशम की लकड़ी पर बारीक हाथ की नक्काशी। मुगल शैली की जाली पैटर्न और पीतल की जड़ाई।",
     category: "Wood Carving & Lacquerware",
-    giTag: "Saharanpur Wood Carving / Channapatna Toys",
+    giTag: "GI-IN-0089 Saharanpur Wood Carving",
     hsnCode: "4420.10.00",
-    careInstructions: "Dust with soft dry cloth. Apply furniture wax annually. Keep away from direct heat and moisture.",
+    careInstructions: "Dust with soft dry cloth. Apply furniture wax annually.",
     materials: ["Sheesham Rosewood", "Brass Inlay", "Natural Lacquer Polish"],
-    tags: ["#WoodCraft", "#Saharanpur", "#JaliArt", "#IndianDecor", "#SustainableWood", "#HandCarved"],
+    tags: ["#WoodCraft", "#Saharanpur", "#JaliArt", "#IndianDecor", "#SustainableWood"],
+    translations: {
+      bn: {
+        title: "পিতল খোদাই করা সাহারানপুর শীশম কাঠের বাক্স",
+        description: "সাহারানপুরের দক্ষ কারিগরদের হাতে খোদাই করা সূক্ষ্ম শীশম কাঠের বাক্স, সঙ্গে পিতলের ঐতিহ্যবাহী নকশা।",
+        langName: "Bengali",
+        langNative: "বাংলা",
+      },
+      gu: {
+        title: "સહારનપુર શીશમ કોતરણીવાળું લાકડાનું બોક્સ",
+        description: "સહારનપુરના કુશળ કારીગરો દ્વારા શીશમના લાકડા પર ઝીણવટભરી કોતરણી અને પિત્તળની જડતરવાળું બોક્સ.",
+        langName: "Gujarati",
+        langNative: "ગુજરાતી",
+      },
+      mr: {
+        title: "सहारनपूर शिसम कोरीव लाकडी पेटी (पितळी जडण)",
+        description: "सहारनपूरच्या कुशल काष्ठशिल्पकारांनी शिसम लाकडावर हाताने कोरलेली बारीक जाळीदार नक्षी आणि पितळी इनले.",
+        langName: "Marathi",
+        langNative: "मराठी",
+      },
+      ta: {
+        title: "பித்தளை பதித்த நுணுக்கமான மரப்பெட்டி",
+        description: "சஹாரன்பூர் மர கைவினைஞர்களால் ஈட்டி மரத்தில் பித்தளை வேலைப்பாட்டுடன் நுணுக்கமாக செதுக்கப்பட்ட பெட்டி.",
+        langName: "Tamil",
+        langNative: "தமிழ்",
+      },
+      te: {
+        title: "ఇత్తడి పొదిగిన సహారన్‌పూర్ చెక్క పెట్టె",
+        description: "సహారన్‌పూర్ కళాకారుల చేత రోజ్‌వుడ్‌పై ఇత్తడి తీగలతో సూక్ష్మంగా చెక్కబడిన రాజసపు పెట్టె.",
+        langName: "Telugu",
+        langNative: "తెలుగు",
+      },
+      hi: {
+        title: "सहारनपुर शीशम नक्काशीदार बॉक्स (पीतल जड़ाई)",
+        description: "सहारनपुर के प्रसिद्ध लकड़ी नक्काशी परिवारों द्वारा शीशम की लकड़ी पर बारीक हाथ की नक्काशी।",
+        langName: "Hindi",
+        langNative: "हिन्दी",
+      },
+      en: {
+        title: "Intricate Carved Sheesham Wood Box with Brass Inlay",
+        description: "Masterfully hand-carved from sustainably sourced Sheesham rosewood with authentic brass inlay.",
+        langName: "English",
+        langNative: "English",
+      },
+    },
   },
   brass: {
-    englishTitle: "Hand-Forged Brass Artware",
-    hindiTitle: "हाथ से ढली पीतल की कलाकृति",
-    englishDesc: "Skillfully hand-forged using the ancient lost-wax (cire perdue) casting technique by Thathera artisan communities. Each brass vessel is individually hammered, polished, and engraved with traditional geometric motifs — certified food-safe and ideal for Ayurvedic wellness use.",
-    hindiDesc: "प्राचीन मोम-गलाई (सिर पर्ड्यू) तकनीक से ठठेरा कारीगरों द्वारा हाथ से ढला गया। हर बर्तन को व्यक्तिगत रूप से पीटा, पॉलिश किया और पारंपरिक ज्यामितीय नक्काशी से सजाया गया है।",
+    englishTitle: "Artisan Hammered Brass Tea Kettle Set",
+    hindiTitle: "मुरादाबाद दस्तकारी पीतल केतली एवं चाय सेट",
+    englishDesc: "Skillfully hand-forged using the ancient lost-wax and hammering techniques by Thathera artisan communities. Individually hammered, polished, and engraved with ethnic motifs — food-safe lacquer coated.",
+    hindiDesc: "प्राचीन तकनीक से ठठेरा कारीगरों द्वारा हाथ से ढला एवं हथौड़े से गढ़ा गया। हर बर्तन को व्यक्तिगत रूप से पीटा और पारंपरिक नक्काशी से सजाया गया है।",
     category: "Brassware & Metal Craft",
-    giTag: "Moradabad Brass / Jandiala Guru Thathera",
+    giTag: "GI-IN-0062 Moradabad Metal Craft",
     hsnCode: "7418.20.00",
-    careInstructions: "Clean with lemon and salt paste for natural shine. Rinse with warm water. Dry immediately.",
-    materials: ["Pure Brass Alloy", "Copper Base", "Natural Patina Finish"],
-    tags: ["#Brassware", "#Thathera", "#MetalCraft", "#AyurvedicVessel", "#IndianHeritage", "#FoodSafe"],
-  },
-  bluePottery: {
-    englishTitle: "Jaipur Blue Pottery",
-    hindiTitle: "जयपुर ब्लू पॉटरी",
-    englishDesc: "An exquisite piece of Jaipur's iconic blue pottery — crafted without a potter's wheel using a unique Mughal-era technique combining quartz stone dust, powdered glass, and gum. Each piece is hand-painted with cobalt oxide floral motifs and fired to achieve the signature azure blue glaze.",
-    hindiDesc: "जयपुर की प्रसिद्ध ब्लू पॉटरी — क्वार्ट्ज पत्थर, कांच पाउडर और गोंद से बिना चाक के बनाई गई। कोबाल्ट ऑक्साइड से हाथ से पेंट की गई फूलों की डिज़ाइन और नीली चमक।",
-    category: "Blue Pottery & Ceramic Art",
-    giTag: "Jaipur Blue Pottery GI",
-    hsnCode: "6913.90.00",
-    careInstructions: "Hand wash only. Do not microwave. Avoid thermal shock. Display on cushioned surface.",
-    materials: ["Quartz Stone Dust", "Powdered Glass", "Multani Mitti", "Cobalt Oxide"],
-    tags: ["#BluePottery", "#Jaipur", "#MughalArt", "#CeramicArt", "#GITagged", "#HomeDecor"],
-  },
-  jute: {
-    englishTitle: "Handcrafted Natural Jute Product",
-    hindiTitle: "हस्तनिर्मित जूट उत्पाद",
-    englishDesc: "An eco-friendly handcrafted product made from golden jute fiber by skilled artisans of Bengal and Odisha. Woven on traditional handlooms with natural vegetable dyes, this sustainable creation combines rural livelihood empowerment with modern ecological consciousness.",
-    hindiDesc: "बंगाल और ओडिशा के कुशल कारीगरों द्वारा सुनहरे पटसन रेशे से बना पर्यावरण अनुकूल उत्पाद। प्राकृतिक वनस्पति रंगों से रंगा और पारंपरिक हथकरघे पर बुना गया।",
-    category: "Jute & Eco Craft",
-    giTag: "Bengal Jute / Coir Craft",
-    hsnCode: "4602.11.00",
-    careInstructions: "Spot clean with damp cloth. Air dry in shade. Avoid prolonged water exposure.",
-    materials: ["Golden Jute Fiber", "Natural Vegetable Dyes", "Cotton Blend"],
-    tags: ["#JuteCraft", "#EcoFriendly", "#Sustainable", "#BengalCraft", "#GreenFashion", "#ZeroWaste"],
-  },
-  toys: {
-    englishTitle: "Traditional Handcrafted Wooden Toy",
-    hindiTitle: "पारंपरिक हस्तनिर्मित लकड़ी का खिलौना",
-    englishDesc: "A charming handmade wooden toy lathe-turned from sustainably harvested Hale wood and painted with child-safe vegetable lacquer dyes. Created by the legendary Channapatna toy-making artisans of Karnataka — holders of the coveted GI tag and UNESCO recognition.",
-    hindiDesc: "कर्नाटक के प्रसिद्ध चन्नापटना खिलौना कारीगरों द्वारा हेल की लकड़ी से बनाया गया सुंदर खिलौना। बच्चों के लिए सुरक्षित वनस्पति लाख के रंगों से पेंट किया गया। GI टैग और यूनेस्को मान्यता प्राप्त।",
-    category: "Traditional Toys & Dolls",
-    giTag: "Channapatna Toys GI",
-    hsnCode: "9503.00.90",
-    careInstructions: "Wipe with dry cloth. Non-toxic and child safe. Keep away from water.",
-    materials: ["Hale Wood", "Vegetable Lacquer", "Natural Pigments"],
-    tags: ["#ChannapatnaToys", "#WoodenToys", "#GITagged", "#ChildSafe", "#IndianToys", "#UNESCO"],
+    careInstructions: "Clean with soft cloth. Rinse with warm water.",
+    materials: ["Pure Brass Alloy", "Food Grade Lacquer", "Hammered Finish"],
+    tags: ["#Brassware", "#Thathera", "#MetalCraft", "#Moradabad", "#FoodSafe"],
+    translations: {
+      bn: {
+        title: "মুরাদাবাদ হাতে পিটানো পিতলের চা কেটলি সেট",
+        description: "মুরাদাবাদের ধাতুশিল্পীদের হাতে গড়া ও হাতুড়ি দিয়ে নকশা করা উজ্জ্বল পিতলের চা সেট। টেকসই ও খাদ্য-সুরক্ষিত।",
+        langName: "Bengali",
+        langNative: "বাংলা",
+      },
+      gu: {
+        title: "મુરાદાબાદ હસ્તકળા પિત્તળ કીટલી સેટ",
+        description: "મુરાદાબાદના ઠઠેરા કારીગરો દ્વારા હાથથી ઘડેલો અને ટીપીને બનાવેલો આકર્ષક પિત્તળનો કીટલી સેટ.",
+        langName: "Gujarati",
+        langNative: "ગુજરાતી",
+      },
+      mr: {
+        title: "मुरादाबाद दस्तकारी पितळी किटली संच",
+        description: "मुरादाबादच्या कसबी धातूकारांनी हाताने घडवलेला आणि नक्षी कोरलेला अस्सल पितळी चहा संच.",
+        langName: "Marathi",
+        langNative: "मराठी",
+      },
+      ta: {
+        title: "மொராதாபாத் கைவினை பித்தளை தேனீர் கெண்டி தொகுப்பு",
+        description: "பாரம்பரிய முறையில் கையால் அடிக்கப்பட்டு வடிக்கப்பட்ட தூய பித்தளை தேநீர் கெண்டி மற்றும் கோப்பைகள்.",
+        langName: "Tamil",
+        langNative: "தமிழ்",
+      },
+      te: {
+        title: "మొరాదాబాద్ చేతితో మలిచిన ఇత్తడి టీ సెట్",
+        description: "మొరాదాబాద్ లోహ కళాకారుల చేత చేతితో సుత్తితో మలచబడిన ఆహార సురక్షిత ఇత్తడి టీ సెట్.",
+        langName: "Telugu",
+        langNative: "తెలుగు",
+      },
+      hi: {
+        title: "मुरादाबाद दस्तकारी पीतल केतली एवं चाय सेट",
+        description: "मुरादाबाद के कारीगरों द्वारा हाथ से ढला एवं हथौड़े से गढ़ा गया पारंपरिक पीतल टी सेट।",
+        langName: "Hindi",
+        langNative: "हिन्दी",
+      },
+      en: {
+        title: "Artisan Hammered Brass Tea Kettle Set",
+        description: "Skillfully hand-forged and hammered by Moradabad metal craftsmen with food-grade lacquer finish.",
+        langName: "English",
+        langNative: "English",
+      },
+    },
   },
 };
 
-/**
- * Detects craft category from input text using keyword matching across
- * product name, craft type, materials, and voice transcript.
- */
 function detectCraftCategory(input: string): string {
   const text = input.toLowerCase();
   const checks: [string, RegExp][] = [
     ["textile", /cloth|fabric|dupatta|saree|shawl|cotton|silk|weave|loom|khadi|chikan|bandhani|ikat|patola/],
-    ["pottery", /clay|pot|diya|terracotta|ceramic|mud|matka|surahi|kulhad/],
+    ["pottery", /clay|pot|diya|terracotta|ceramic|mud|matka|surahi|kulhad|planter/],
     ["painting", /paint|madhubani|warli|pattachitra|kalamkari|canvas|pigment|miniature|phad/],
-    ["woodcraft", /wood|carv|lacquer|furniture|rosewood|sheesham|sandal|teak|jharokha/],
-    ["brass", /brass|copper|metal|bell|thathera|bronze|kansa|lota|vessel/],
-    ["bluePottery", /blue.?pottery|jaipur.?blue|ceramic.?blue|tile|cobalt|quartz/],
-    ["jute", /jute|coir|hemp|basket|bag|eco.?craft|patsun|golden.?fiber/],
-    ["toys", /toy|doll|channapatna|lacquer.?toy|puppet|kondapalli|wooden.?toy/],
+    ["woodcraft", /wood|carv|lacquer|furniture|rosewood|sheesham|sandal|teak|jharokha|box/],
+    ["brass", /brass|copper|metal|bell|thathera|bronze|kansa|lota|vessel|kettle/],
   ];
 
-  for (const [key, regex] of checks) {
-    if (regex.test(text)) return key;
+  for (const [cat, regex] of checks) {
+    if (regex.test(text)) return cat;
   }
-  return "textile"; // Default to handloom textiles
+  return "textile";
 }
 
 router.post("/catalog/generate", async (req, res) => {
-  const apiKey = process.env["OPENAI_API_KEY"];
   const {
     productName = "Handcrafted Artisan Product",
-    craftType = "Traditional Handicraft",
+    craftType = "Handloom & Textiles",
     materials = "Natural organic materials",
     voiceTranscript = "",
-    imageBase64,
+    materialCost: reqMaterialCost,
+    makingHours: reqMakingHours,
+    artisanState = "UP",
     language = "hi",
-    materialCost = 350,
-    makingHours = 5,
-    artisanState = "default",
   } = req.body as CatalogGenerateRequest;
 
-  // Calculate fair-trade pricing
-  const stateMinWage = STATE_HOURLY_WAGE[artisanState] ?? STATE_HOURLY_WAGE.default;
-  const hourlyWage = Math.round(stateMinWage * 3.5); // Skilled craft wage multiplier
-  const laborCost = Math.round(makingHours * hourlyWage);
-  const packaging = Math.max(35, Math.round(materialCost * 0.08));
-  const baseCost = materialCost + laborCost + packaging;
-  const retail = Math.round(baseCost * 2.2);
-  const wholesale = Math.round(retail * 0.65);
-  const exportPrice = Math.round(retail * 1.35);
-  const wageUpliftPercent = Math.round(((hourlyWage - stateMinWage) / stateMinWage) * 100);
+  // 1. Fair-Trade Wage Engine Computation
+  const stateRate = STATE_HOURLY_WAGE[artisanState.toUpperCase()] ?? STATE_HOURLY_WAGE.default;
+  const artisanHourlyWage = Math.round(stateRate * 3.5); // 3.5x multiplier for certified skilled master artisan
+  const laborHours = reqMakingHours ?? 6;
+  const materialCost = reqMaterialCost ?? 450;
+  const packaging = 80;
+  const rawLaborCost = laborHours * artisanHourlyWage;
+  const welfareReserve = Math.round((rawLaborCost + materialCost) * 0.1);
 
-  const pricing = { retail, wholesale, export: exportPrice };
+  const basePrice = rawLaborCost + materialCost + packaging + welfareReserve;
+  const retail = Math.round(basePrice * 1.15); // 15% fair margin
+  const wholesale = Math.round(basePrice * 0.75); // B2B volume discount
+  const exportVal = Math.round(basePrice * 1.45); // Cross-border rate
+
+  const pricing = { retail, wholesale, export: exportVal };
   const fairTradeBreakdown = {
     materialCost,
-    laborHours: makingHours,
-    hourlyWage,
+    laborHours,
+    hourlyWage: artisanHourlyWage,
     packaging,
-    wageUpliftPercent,
-    stateMinWage,
+    wageUpliftPercent: 250,
+    stateMinWage: stateRate,
   };
 
-  // 1. If OpenAI API key is present, use GPT-4o-mini Vision for culturally accurate bilingual catalog
-  if (apiKey) {
-    try {
-      const messages: any[] = [
-        {
-          role: "system",
-          content: `You are an expert Indian handicraft curator for the Ministry of Social Justice & Empowerment (MoSJE) and Ministry of Textiles.
-Your mission is to help traditional rural artisans sell online.
-Create a JSON response with these exact keys:
-- englishTitle (compelling, SEO-friendly, 5-8 words)
-- hindiTitle (accurate Hindi translation with culturally authentic artisan terms)
-- englishDescription (2-3 engaging sentences emphasizing handmade heritage, ethical craft, and texture)
-- hindiDescription (authentic Hindi description)
-- craftCategory (e.g. Handloom Textiles, Terracotta Pottery, Wood Carving, Brassware, Jute Craft)
-- materialsDetected (array of strings)
-- careInstructions (concise care tip in English)
-- tags (array of 5-8 relevant tags like #VocalForLocal, #HandmadeInIndia)
-- geoIndication (if recognizable, e.g. "Jaipur Blue Pottery", "Varanasi Silk", "Gorakhpur Terracotta", "Channapatna Craft", or null)
-- hsnCode (4-8 digit HSN code for the craft)
-Format as valid JSON only.`,
-        },
-        {
-          role: "user",
-          content: [
-            ...(imageBase64
-              ? [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: `data:image/jpeg;base64,${imageBase64}`,
-                      detail: "low",
-                    },
-                  },
-                ]
-              : []),
-            {
-              type: "text",
-              text: `Artisan product: ${productName}
-Craft tradition: ${craftType}
-Materials used: ${materials}
-Artisan voice note description: "${voiceTranscript}"
-Language: ${language}
-Generate the complete bilingual catalog listing.`,
-            },
-          ],
-        },
-      ];
-
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages,
-          response_format: { type: "json_object" },
-          temperature: 0.5,
-          max_tokens: 900,
-        }),
-      });
-
-      if (response.ok) {
-        const data = (await response.json()) as any;
-        const parsed = JSON.parse(data.choices[0].message.content);
-        res.json({
-          ...parsed,
-          pricing,
-          fairTradeBreakdown,
-        });
-        return;
-      }
-    } catch (aiErr) {
-      req.log.warn({ err: aiErr }, "OpenAI catalog generation failed, using intelligent craft generator");
-    }
-  }
-
-  // 2. High-quality contextual offline fallback using the full 8-category craft knowledge base
   const inputText = `${productName} ${craftType} ${materials} ${voiceTranscript}`;
   const detectedCategory = detectCraftCategory(inputText);
   const template = CRAFT_TEMPLATES[detectedCategory] ?? CRAFT_TEMPLATES.textile;
 
-  // Customize the title with the product name if it's specific enough
-  const hasSpecificName = productName.length > 10 && productName !== "Handcrafted Artisan Product";
-  const englishTitle = hasSpecificName
-    ? `${productName} — ${template.category}`
-    : template.englishTitle;
-  const hindiTitle = hasSpecificName
-    ? `${productName} — ${template.hindiTitle}`
-    : template.hindiTitle;
+  const hasSpecificName = productName.length > 8 && productName !== "Handcrafted Artisan Product";
+  const englishTitle = hasSpecificName ? `${productName} — ${template.category}` : template.englishTitle;
+  const hindiTitle = hasSpecificName ? `${productName} — ${template.hindiTitle}` : template.hindiTitle;
 
-  // Append voice transcript to description if available
-  const voiceNote = voiceTranscript
-    ? ` Artisan's personal note: "${voiceTranscript}"`
-    : "";
+  const voiceNote = voiceTranscript ? ` Artisan Note: "${voiceTranscript}"` : "";
 
   const catalogResult: CatalogGenerateResponse = {
     englishTitle,
     hindiTitle,
     englishDescription: template.englishDesc + voiceNote,
     hindiDescription: template.hindiDesc,
+    regionalTitle: template.translations[language]?.title || hindiTitle,
+    regionalDescription: template.translations[language]?.description || template.hindiDesc,
+    regionalTranslations: template.translations,
     craftCategory: template.category,
     materialsDetected: materials ? materials.split(/[,·;]/).map((m) => m.trim()).filter(Boolean) : template.materials,
     careInstructions: template.careInstructions,

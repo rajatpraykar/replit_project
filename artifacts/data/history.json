@@ -1,0 +1,57 @@
+[
+  {
+    "id": "hist_1788989459240",
+    "userId": "artisan_1788989459239",
+    "action": "ACCOUNT_CREATED",
+    "title": "Artisan Account Registered: Meera Ben Patel",
+    "details": "Sovereign Pehchan ID issued (KST-GU-2024-3403) for cluster Ajrakhpur Block Print & Bandhani.",
+    "timestamp": "2026-09-09T21:30:59.240Z",
+    "category": "Identity"
+  },
+  {
+    "id": "hist_1788989298752_299",
+    "userId": "artisan_1788989271674",
+    "action": "STUDIO_ENHANCEMENT",
+    "title": "4K Terracotta Craft Polish",
+    "details": "Contrast +20%, Softbox 5500K lighting",
+    "timestamp": "2026-09-09T21:28:18.752Z",
+    "category": "General",
+    "meta": {}
+  },
+  {
+    "id": "hist_1788989271675",
+    "userId": "artisan_1788989271674",
+    "action": "ACCOUNT_CREATED",
+    "title": "Artisan Account Registered: Priya Das",
+    "details": "Sovereign Pehchan ID issued (KST-WE-2024-4046) for cluster Bishnupur Terracotta & Baluchari.",
+    "timestamp": "2026-09-09T21:27:51.675Z",
+    "category": "Identity"
+  },
+  {
+    "id": "hist_01",
+    "userId": "artisan_demo_01",
+    "action": "PHOTO_ENHANCED",
+    "title": "Banarasi Katan Silk Dupatta Studio Polish",
+    "details": "Background removed, softbox 5500K lighting applied, 4K isolation.",
+    "timestamp": "2024-07-01T09:30:00.000Z",
+    "category": "Handloom / Silk"
+  },
+  {
+    "id": "hist_02",
+    "userId": "artisan_demo_01",
+    "action": "VOICE_TRANSCRIBED",
+    "title": "Awadhi Speech-to-Catalog Ingestion",
+    "details": "Transcribed 42s audio in Awadhi/Hindi to verified bilingual specification.",
+    "timestamp": "2024-07-01T09:32:00.000Z",
+    "category": "Voice AI"
+  },
+  {
+    "id": "hist_03",
+    "userId": "artisan_demo_01",
+    "action": "ONDC_BROADCAST",
+    "title": "Catalog Synced across ONDC Network",
+    "details": "Live on Paytm ONDC, PhonePe Pincode, and Mystore at ₹1,850.",
+    "timestamp": "2024-07-01T09:35:00.000Z",
+    "category": "Beckn Protocol"
+  }
+]

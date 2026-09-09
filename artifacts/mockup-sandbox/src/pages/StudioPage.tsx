@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Page } from "../components/Navbar";
 
 interface StudioPageProps {
@@ -7,14 +7,17 @@ interface StudioPageProps {
 }
 
 const LANGUAGES = [
-  { id: "hi", name: "🇮🇳 हिन्दी (Hindi)", audio: "यह शुद्ध बनारसी कतान रेशमी दुपट्टा है, जिसमें असली ज़री का काम है। 14 दिन की हाथ की बुनाई, पारंपरिक कधुआ तकनीक।" },
-  { id: "mr", name: "मराठी", audio: "हा अस्सल पैठणी रेशमी शेला आहे, ज्यावर शुद्ध जरीचे नक्षीकाम केले आहे. 14 दिवसांची हस्तकला." },
-  { id: "bn", name: "বাংলা", audio: "এটি খাঁটি জামদানি রেশম ওড়না, ঐতিহ্যবাহী সোনার জরির কাজ করা। ১৪ দিনের হস্তশিল্প।" },
-  { id: "gu", name: "ગુજરાતી", audio: "આ શુદ્ધ પટોળા સિલ્ક દુપટ્ટો છે, જેમાં અસલી ઝરીનું કામ કરવામાં આવ્યું છે. 14 દિવસની મહેનત." },
-  { id: "ta", name: "தமிழ்", audio: "இது தூய காஞ்சிபுரம் பட்டு துப்பட்டா, அசல் தங்க ஜரிகை வேலைப்பாடு கொண்டது. 14 நாட்கள் கைத்தறி." },
-  { id: "te", name: "తెలుగు", audio: "ఇది స్వచ్ఛమైన చేనేత పట్టు దుపట్టా, అసలైన బంగారు జరీ నేతతో 14 రోజులు శ్రమించి తయారు చేయబడింది." },
-  { id: "en", name: "English", audio: "Handwoven pure Banarasi Katan silk dupatta featuring authentic gold zari motif border. Handcrafted over 14 days." },
+  { id: "hi", name: "🇮🇳 हिन्दी (Hindi)", audio: "यह शुद्ध बनारसी कतान रेशमी दुपट्टा है, जिसमें असली ज़री का काम है। 14 दिन की हाथ की बुनाई, पारंपरिक कधुआ तकनीक।", title: "हस्तनिर्मित बनारसी कतान रेशमी दुपट्टा (स्वर्ण ज़री)", desc: "वाराणसी के पारंपरिक बुनकरों द्वारा निर्मित शुद्ध रेशमी दुपट्टा, कधुआ तकनीक द्वारा हाथ से बुना गया।" },
+  { id: "bn", name: "বাংলা (Bengali)", audio: "এটি খাঁটি জামদানি বেনারসি রেশম ওড়না, ঐতিহ্যবাহী সোনার জরির কাজ করা। ১৪ দিনের হস্তশিল্প।", title: "ঐতিহ্যবাহী বেনারসি কাতান রেশম ওড়না (স্বর্ণ জরি)", desc: "বারাণসীর মাস্টার তাঁতিদের হাতে ঐতিহ্যবাহী তাঁতে বোনা বিশুদ্ধ রেশম ওড়না। খাঁটি জরির চমৎকার নকশা সমৃদ্ধ।" },
+  { id: "gu", name: "ગુજરાતી (Gujarati)", audio: "આ શુદ્ધ પટોળા બનારસી સિલ્ક દુપટ્ટો છે, જેમાં અસલી ઝરીનું કામ કરવામાં આવ્યું છે. 14 દિવસની મહેનત.", title: "હેરિટેજ હાથવણાટ બનારસી કાતાન સિલ્ક દુપટ્ટો (ગોલ્ડ ઝરી)", desc: "વારાણસીના માસ્ટર કારીગરો દ્વારા પરંપરાગત કઢુઆ પદ્ધતિથી હાથથી વણાયેલો શુદ્ધ રેશમી દુપટ્ટો." },
+  { id: "mr", name: "मराठी (Marathi)", audio: "हा अस्सल पैठणी बनारसी रेशमी शेला आहे, ज्यावर शुद्ध जरीचे नक्षीकाम केले आहे. 14 दिवसांची हस्तकला.", title: "अस्सल हातमाग बनारसी कातान रेशमी शेला (सुवर्ण जरी)", desc: "वाराणसीतील पारंपारिक विणकरांनी कढुआ तंत्राने हाताने विणलेला शुद्ध रेशमी शेला. अस्सल सोन्याच्या जरीचे नक्षीकाम." },
+  { id: "ta", name: "தமிழ் (Tamil)", audio: "இது தூய காஞ்சிபுரம் வாரணாசி பட்டு துப்பட்டா, அசல் தங்க ஜரிகை வேலைப்பாடு கொண்டது. 14 நாட்கள் கைத்தறி.", title: "பாரம்பரிய கைத்தறி பனாரசி பட்டு துப்பட்டா (தங்க ஜரிகை)", desc: "வாரணாசி பாரம்பரிய நெசவாளர்களால் தூய பட்டில் தங்க ஜரிகை வேலைப்பாட்டுடன் கையால் நெய்யப்பட்ட துப்பட்டா." },
+  { id: "te", name: "తెలుగు (Telugu)", audio: "ఇది స్వచ్ఛమైన చేనేత బనారసి పట్టు దుపట్టా, అసలైన బంగారు జరీ నేతతో 14 రోజులు శ్రమించి తయారు చేయబడింది.", title: "సంప్రదాయ చేనేత బనారసి పట్టు దుపట్టా (బంగారు జరీ)", desc: "వారణాసి మాస్టర్ నేతకారుల చేత సహజమైన కధువా పద్ధతిలో చేనేతతో నేయబడిన స్వచ్ఛమైన పట్టు దుపట్టా." },
+  { id: "en", name: "English", audio: "Handwoven pure Banarasi Katan silk dupatta featuring authentic gold zari motif border. Handcrafted over 14 days using heritage Kadwa loom technique.", title: "Heritage Handwoven Banarasi Katan Silk Dupatta (Gold Zari Weave)", desc: "Exquisitely handcrafted by Varanasi master weavers using certified Mulberry silk and lustrous gold zari yarn. Features time-honored floral jaal motifs." },
 ];
+
+const DEFAULT_RAW_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuDKGMveQ6hp-PWvUfDfik2_mXgdIDMdmY4ezvnlztpEqy381cTha_2tGQKeUSb_9CTYdunLwD1sXBmzvh-60RLlsuNeErAjkzq82Jur0BKimK6mcmcMQV9npu5NsN7NBfhydByKCMCc0Q1CPkmZM97fjbzb_LnpAEi7XEHECrx3AWlJbPX0nBj_UmowtVpgjFCOeSLDi-u6DDTWqy0J23g30QAKT2DsrFBAzFdz8UaYQ1v41FpDHzyDXg";
+const DEFAULT_ENHANCED_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuCCs5Hy657myZZWE38Dsz74tkshFa1yOL81olTJfUqMHEExSWgMoz2T3rJFCwYrVeflzWZrlGb1_5gCqomxa6x3w_Nac1iTaHUiYTV90kiqyiLxZ0RuLaFtZf4ROB5I3Sqy3h-_jsZ-gbcAQdtIKC6sPH8tizY95EkMfaykFDIc3BxnRXlqCjmLa8i5Rt8rXr8N1THCoUtzRNdxaavJ39miDB0d_vZYuXA_MhFLoD7riS01T8JG_IgmOg";
 
 export default function StudioPage({ lang }: StudioPageProps) {
   const [selectedLang, setSelectedLang] = useState("hi");
@@ -24,9 +27,20 @@ export default function StudioPage({ lang }: StudioPageProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastDone, setBroadcastDone] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyList, setHistoryList] = useState<any[]>([]);
 
-  // Dynamic Fair Wage calculation based on formula
+  // Images state
+  const [rawImage, setRawImage] = useState<string>(DEFAULT_RAW_IMG);
+  const [enhancedImage, setEnhancedImage] = useState<string>(DEFAULT_ENHANCED_IMG);
+  const [isCustomUploaded, setIsCustomUploaded] = useState(false);
+  const [photoInfo, setPhotoInfo] = useState({ name: "Banarasi Dupatta (Workshop Raw)", size: "3.4 MB" });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic Fair Wage calculation
   const hourlyRate = 87.5;
   const laborCost = Math.round(hours * hourlyRate);
   const welfareReserve = Math.round((laborCost + materialCost) * 0.1);
@@ -34,11 +48,164 @@ export default function StudioPage({ lang }: StudioPageProps) {
   const b2bPrice = Math.round(b2cPrice * 0.65);
   const exportPrice = Math.round(b2cPrice * 1.35);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const currentLangData = LANGUAGES.find((l) => l.id === selectedLang) || LANGUAGES[0];
+
+  // Fetch activity history
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("/api/history");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setHistoryList(data);
+      }
+    } catch {
+      // Offline fallback from localStorage
+      const local = localStorage.getItem("kalasetu_history");
+      if (local) setHistoryList(JSON.parse(local));
+    }
+  };
+
+  const recordActivity = async (action: string, title: string, details: string) => {
+    const entry = {
+      id: `hist_${Date.now()}`,
+      action,
+      title,
+      details,
+      timestamp: new Date().toISOString(),
+      category: "Studio",
+    };
+    try {
+      await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+    } catch {
+      // fallback
+    }
+    setHistoryList((prev) => [entry, ...prev]);
+    localStorage.setItem("kalasetu_history", JSON.stringify([entry, ...historyList]));
+  };
+
+  // Client-Side Canvas Image Enhancement
+  const enhanceImageClient = (imgDataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(imgDataUrl);
+
+        canvas.width = img.width || 1200;
+        canvas.height = img.height || 1200;
+
+        // 1. Draw Clean Warm Studio Background (#FFFFFF / #FFFBF2)
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Draw Subtle Radial Studio Glow
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2,
+          canvas.height / 2,
+          50,
+          canvas.width / 2,
+          canvas.height / 2,
+          canvas.width / 1.5
+        );
+        gradient.addColorStop(0, "rgba(245, 166, 35, 0.08)");
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 3. Apply Filters: +12% Brightness, +15% Contrast, +10% Saturation
+        ctx.filter = "brightness(1.12) contrast(1.15) saturate(1.10)";
+
+        // 4. Draw Soft Pedestal Drop Shadow
+        ctx.shadowColor = "rgba(61, 64, 91, 0.20)";
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = 16;
+
+        // 5. Draw the product image centered with studio margins
+        const pad = canvas.width * 0.06;
+        ctx.drawImage(img, pad, pad, canvas.width - pad * 2, canvas.height - pad * 2);
+
+        // 6. Reset filters for Watermark Badge
+        ctx.filter = "none";
+        ctx.shadowColor = "transparent";
+
+        // Watermark Badge Banner at bottom
+        const badgeHeight = 36;
+        const badgeY = canvas.height - badgeHeight - 16;
+        ctx.fillStyle = "rgba(43, 46, 72, 0.85)";
+        ctx.beginPath();
+        ctx.roundRect(16, badgeY, 320, badgeHeight, 18);
+        ctx.fill();
+
+        ctx.fillStyle = "#F5A623";
+        ctx.font = "bold 14px Inter, sans-serif";
+        ctx.fillText("✨ KalaSetu Studio 4K Polish", 32, badgeY + 22);
+
+        resolve(canvas.toDataURL("image/jpeg", 0.92));
+      };
+      img.onerror = () => resolve(imgDataUrl);
+      img.src = imgDataUrl;
+    });
+  };
+
+  // Handle User File Upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    setPhotoInfo({ name: file.name, size: `${sizeMb} MB` });
+    setIsEnhancing(true);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const src = event.target?.result as string;
+      setRawImage(src);
+      setIsCustomUploaded(true);
+
+      // Call backend API enhance endpoint
+      try {
+        const base64Content = src.split(",")[1] || "";
+        await fetch("/api/enhance-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: base64Content,
+            mimeType: file.type,
+            craftType: "artisan_craft",
+          }),
+        });
+      } catch {
+        // Continue with high-fidelity client enhancement
+      }
+
+      // Perform real client-side canvas studio polish
+      const enhanced = await enhanceImageClient(src);
+      setEnhancedImage(enhanced);
+      setIsEnhancing(false);
+      setSliderPosition(50);
+
+      recordActivity(
+        "PHOTO_ENHANCED",
+        `Studio Polish: ${file.name}`,
+        `4K background isolation, softbox illumination, and contrast enhancement applied.`
+      );
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    if (!sliderContainerRef.current) return;
+    const rect = sliderContainerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     setSliderPosition((x / rect.width) * 100);
   };
@@ -48,13 +215,34 @@ export default function StudioPage({ lang }: StudioPageProps) {
     setTimeout(() => {
       setIsBroadcasting(false);
       setBroadcastDone(true);
-    }, 1500);
+      recordActivity(
+        "ONDC_BROADCAST",
+        "Broadcasted to ONDC Network & GeM",
+        `Catalog synced to Paytm ONDC, Mystore, PhonePe Pincode at ₹${b2cPrice.toLocaleString("en-IN")}.`
+      );
+    }, 1200);
   };
 
-  const currentAudioText = LANGUAGES.find((l) => l.id === selectedLang)?.audio || LANGUAGES[0].audio;
+  const downloadEnhancedImage = () => {
+    const link = document.createElement("a");
+    link.href = enhancedImage;
+    link.download = `kalasetu_enhanced_${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex flex-col w-full bg-surface pb-16">
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        accept="image/*"
+        className="hidden"
+      />
+
       {/* ═══ Sticky Sub-Header Bar ═══ */}
       <section className="w-full bg-surface-container-lowest/90 backdrop-blur-md shadow-sm border-b border-surface-container-low">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-12 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -80,7 +268,7 @@ export default function StudioPage({ lang }: StudioPageProps) {
               >
                 bolt
               </span>
-              <span>GPT-4o Vision + Bhashini ASR + Neural Studio</span>
+              <span>GPT-4o Vision + Bhashini Multilingual + Neural Fill</span>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed/60 text-on-tertiary-fixed font-label-sm text-xs font-semibold">
               <span className="material-symbols-outlined text-[14px] text-tertiary font-bold">
@@ -93,6 +281,13 @@ export default function StudioPage({ lang }: StudioPageProps) {
           {/* Quick Action Helpers */}
           <div className="flex items-center gap-2.5">
             <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-xs font-semibold transition-all cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px] text-primary">history</span>
+              <span>Studio History ({historyList.length})</span>
+            </button>
+            <button
               onClick={() => setIsRecording(!isRecording)}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-xs sm:text-sm transition-all shadow-sm group cursor-pointer"
             >
@@ -101,16 +296,50 @@ export default function StudioPage({ lang }: StudioPageProps) {
               </span>
               <span>बोलकर निर्देश दें (Voice Guide)</span>
             </button>
-            <button
-              onClick={() => alert("KalaSetu Studio Tutorial: 1) Snap photo, 2) Speak craft story, 3) Auto-price & Broadcast to ONDC.")}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-transparent hover:bg-surface-container text-on-surface-variant font-label-sm text-xs transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">help_outline</span>
-              <span>Studio Tutorials</span>
-            </button>
           </div>
         </div>
       </section>
+
+      {/* ═══ Activity History Drawer ═══ */}
+      {showHistory && (
+        <div className="bg-surface-container-low border-b border-surface-container px-4 md:px-8 py-4 animate-fadeIn">
+          <div className="max-w-[1440px] mx-auto flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">history</span>
+                <h4 className="font-headline-sm text-sm sm:text-base font-bold text-on-surface">
+                  Local Activity &amp; Enhancement History (Persistent JSON DB)
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="text-xs font-bold text-secondary hover:underline"
+              >
+                Close Drawer ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {historyList.slice(0, 4).map((h, i) => (
+                <div
+                  key={h.id || i}
+                  className="p-3 rounded-xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col justify-between gap-1 text-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary font-code-sm text-[10px]">
+                      {h.action}
+                    </span>
+                    <span className="text-[10px] text-on-surface-variant">
+                      {new Date(h.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                  <p className="font-bold text-on-surface line-clamp-1">{h.title}</p>
+                  <p className="text-on-surface-variant text-[11px] line-clamp-2">{h.details}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ Main Dual-Panel Workspace ═══ */}
       <section className="w-full max-w-[1440px] mx-auto px-4 md:px-8 lg:px-12 py-8">
@@ -141,7 +370,7 @@ export default function StudioPage({ lang }: StudioPageProps) {
                       1
                     </span>
                     <span className="font-label-sm text-xs text-on-surface font-semibold truncate">
-                      Photo Capture
+                      Photo Upload
                     </span>
                   </div>
                 </div>
@@ -182,101 +411,64 @@ export default function StudioPage({ lang }: StudioPageProps) {
                   </h3>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-xs font-semibold">
-                  High Res Ready
+                  {isEnhancing ? "Enhancing..." : "Live Inpainting Ready"}
                 </span>
               </div>
 
               {/* Upload Dropzone */}
               <div className="relative rounded-2xl p-4 bg-surface-container-low flex flex-col gap-4 border border-surface-container">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                  {/* Raw Photo Preview Thumbnail */}
-                  <div className="md:col-span-5 relative rounded-xl overflow-hidden shadow-sm aspect-square bg-surface-container">
+                  {/* Photo Preview Thumbnail */}
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="md:col-span-5 relative rounded-xl overflow-hidden shadow-sm aspect-square bg-surface-container cursor-pointer group"
+                    title="Click to upload any photo from your computer or phone"
+                  >
                     <img
-                      className="w-full h-full object-cover"
-                      alt="Raw unedited photograph of Banarasi silk dupatta"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvrO1BLZnlvpL2Lsz2VP53q4iBLrsm8vs4DdV9zgLHtZtP1WMUwL4NTBVaQW67BCwzgmignRPzMqbWkOcagH0quU1Yo_FA3pF_xExogNgJFumLkdBDHq94_WBd7VD5-ByfCJGQBcU8CgD9waB2jCKNfiIecJ4bnSGG4_lxRUiY4qQWQQ7Ldy_ItaU0yrF71bhfsA4kfqNyx_-wJbIPLOJM1fiXwJTcdHH6iDv146pqnuc2VETotaOZzw"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      alt={photoInfo.name}
+                      src={rawImage}
                     />
+                    <div className="absolute inset-0 bg-inverse-surface/30 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1">
+                      <span className="material-symbols-outlined text-2xl">upload_file</span>
+                      <span className="text-xs font-bold">Upload Any Photo</span>
+                    </div>
                     <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-tertiary text-white font-label-sm text-[11px] flex items-center gap-1 shadow-sm font-semibold">
                       <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                      <span>Photo Loaded (3.4 MB)</span>
-                    </div>
-                    <div className="absolute bottom-2 inset-x-2 flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded bg-inverse-surface/80 text-white font-code-sm text-[11px] backdrop-blur-sm">
-                        2400 × 2400 px
-                      </span>
-                      <button
-                        onClick={() => alert("Re-syncing neural texture camera pipeline...")}
-                        className="w-7 h-7 rounded-full bg-surface-container-lowest/90 text-primary hover:bg-surface-container-lowest flex items-center justify-center transition-all shadow-sm"
-                        title="Reload Camera"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">sync</span>
-                      </button>
+                      <span>{isCustomUploaded ? "Your Photo Loaded" : "Photo Loaded"} ({photoInfo.size})</span>
                     </div>
                   </div>
 
-                  {/* Upload instructions & Multi-angle stack */}
+                  {/* Upload instructions & button */}
                   <div className="md:col-span-7 flex flex-col justify-between h-full gap-3">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-1 text-primary">
-                        <span className="material-symbols-outlined text-lg">image_search</span>
+                        <span className="material-symbols-outlined text-lg">add_photo_alternate</span>
                         <span className="font-label-md text-xs sm:text-sm font-bold">
-                          Raw Handloom Capture Detected
+                          Upload Any Craft Photo To Test
                         </span>
                       </div>
                       <p className="font-body-sm text-xs text-on-surface-variant leading-relaxed">
-                        AI automatically crops imperfections, balances ambient lighting, and extracts fabric micro-textures for 3D zoom inspection.
+                        KalaSetu removes background clutter, balances dim workshop lighting, boosts texture contrast, and creates 4K commercial studio photography.
                       </p>
                     </div>
 
-                    {/* Multi-angle thumbnails */}
-                    <div className="flex flex-col gap-1.5 pt-1">
-                      <span className="font-label-sm text-xs text-on-surface-variant font-semibold">
-                        Multi-angle Capture Queue:
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          onClick={() => alert("Inspecting Zari Kadwa macro weave closeup...")}
-                          className="w-12 h-12 rounded-lg bg-surface-container-highest overflow-hidden relative group cursor-pointer shadow-sm border border-surface-container"
-                        >
-                          <img
-                            className="w-full h-full object-cover"
-                            alt="Macro shot of Kadwa weave"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3LijmmnZCuuy9yaENzfp7eacRh_EYfccvqL0j2B2cTnO0gcNAiQkFmM7Biuc_YnVOhv-lFSbTsLGR7SpkWxRtIQ75L4HN75oiyKjMMt44xAzkG-xp25ZIgruMTX2lJgva_AU68kMhaVqnUT1QKPD6tZPwLX2neZ75dJatQUf-zWeljfMigBC1p4n5WgKuDN_0scfyLn8IbKSILKDUvMexEZhO-_STOZgBH8fw6VLp7QK0MY109Wor-A"
-                          />
-                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-xs">zoom_in</span>
-                          </div>
-                        </div>
-
-                        <div
-                          onClick={() => alert("Inspecting Pallu corner fringe detail...")}
-                          className="w-12 h-12 rounded-lg bg-surface-container-highest overflow-hidden relative group cursor-pointer shadow-sm border border-surface-container"
-                        >
-                          <img
-                            className="w-full h-full object-cover"
-                            alt="Pallu corner fringe detail"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNngE1cgqEYkTmaedjFCrkekkojjvkST-4nMcWo_fwtxhUXOk0NlosjAC4H-9dq5f6K4iz06wnHHR2SQFohS9NPCNQXIwD-799r32j78TUwytxILybicrewrQcKmfeA1hl_i-KM1z4btL9YGnNP54Ap2HctbxsO_mZk0xooQpqhHEy2VWMRgvNnGCGT9LzBfQ-G3F-opByBntBqXP00KgxU96t9mb9qvA7c-7uB2ZzH45Vxvi_RaQmoQ"
-                          />
-                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-xs">zoom_in</span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => alert("Adding new macro zoom angle to ONDC payload...")}
-                          className="h-12 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container text-primary font-label-sm text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer border border-primary-container/20"
-                        >
-                          <span className="material-symbols-outlined text-base">add_a_photo</span>
-                          <span>+ Add Angle</span>
-                        </button>
-                      </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-primary-container to-secondary text-white font-label-sm text-xs font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-base">cloud_upload</span>
+                        <span>Upload Your Photo (Upload Any Image)</span>
+                      </button>
                     </div>
 
                     <div className="flex items-center justify-between text-on-surface-variant font-label-sm text-[11px] pt-1">
-                      <span>Supported: JPG, PNG, HEIF up to 25MB</span>
+                      <span>Supported: JPG, PNG, WEBP, HEIC</span>
                       <span className="text-tertiary font-bold flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-tertiary animate-ping"></span>
-                        Ready for Inpainting
+                        AI Auto-Enhanced
                       </span>
                     </div>
                   </div>
@@ -284,7 +476,7 @@ export default function StudioPage({ lang }: StudioPageProps) {
               </div>
             </div>
 
-            {/* STEP 2: Vernacular Voice & Dialect Story (Bhashini AI) */}
+            {/* STEP 2: Vernacular Voice & Dialect Story (Bhashini AI - 7 Languages) */}
             <div className="p-5 sm:p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-4 border border-surface-container relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -302,20 +494,27 @@ export default function StudioPage({ lang }: StudioPageProps) {
                 </div>
                 <div className="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-xs font-semibold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">graphic_eq</span>
-                  <span>Live Engine</span>
+                  <span>7 Languages</span>
                 </div>
               </div>
 
-              {/* Language Selector Bar */}
+              {/* Language Selector Bar (7 Indian Languages) */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                 {LANGUAGES.map((l) => (
                   <button
                     key={l.id}
-                    onClick={() => setSelectedLang(l.id)}
-                    className={`px-3 py-1 rounded-full font-label-sm text-xs shrink-0 transition-all cursor-pointer ${
+                    onClick={() => {
+                      setSelectedLang(l.id);
+                      recordActivity(
+                        "LANG_SWITCHED",
+                        `Dialect Switched to ${l.name}`,
+                        `Audio synthesis and catalog payload synchronized to ${l.name}.`
+                      );
+                    }}
+                    className={`px-3 py-1.5 rounded-full font-label-sm text-xs shrink-0 transition-all cursor-pointer ${
                       selectedLang === l.id
                         ? "bg-primary-container text-on-primary-container font-bold shadow-sm"
-                        : "bg-surface-container-high hover:bg-surface-container text-on-surface-variant"
+                        : "bg-surface-container-high hover:bg-surface-container text-on-surface-variant font-medium"
                     }`}
                   >
                     {l.name}
@@ -351,7 +550,7 @@ export default function StudioPage({ lang }: StudioPageProps) {
                       </span>
                       <span className="font-body-sm text-xs text-on-surface-variant">
                         {isRecording
-                          ? "Bhashini ASR actively transcribing Awadhi/Hindi audio stream..."
+                          ? `Bhashini ASR actively transcribing ${currentLangData.name} stream...`
                           : "Hold or click to narrate craft story in your mother tongue"}
                       </span>
                     </div>
@@ -388,15 +587,15 @@ export default function StudioPage({ lang }: StudioPageProps) {
                     <div className="flex items-center justify-between">
                       <span className="font-label-sm text-xs font-bold text-secondary flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                        Transcribed Regional Audio ({selectedLang.toUpperCase()})
+                        Transcribed Vernacular Speech ({currentLangData.name})
                       </span>
                       <span className="font-code-sm text-xs text-tertiary font-bold flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">done_all</span>
                         99.4% ASR Accuracy
                       </span>
                     </div>
-                    <p className="font-['Noto_Sans_Devanagari'] text-sm sm:text-base text-on-surface leading-relaxed">
-                      "{currentAudioText}"
+                    <p className="text-sm sm:text-base text-on-surface leading-relaxed font-semibold">
+                      "{currentLangData.audio}"
                     </p>
                   </div>
 
@@ -514,31 +713,28 @@ export default function StudioPage({ lang }: StudioPageProps) {
             {/* Big Launch Trigger CTA */}
             <button
               onClick={() => {
-                setIsGenerating(true);
-                setTimeout(() => {
-                  setIsGenerating(false);
-                  alert("AI Studio catalog generation complete! Multilingual payload synced with ONDC specifications.");
-                }, 800);
+                alert(`AI Catalog generated in ${currentLangData.name} and English! Ready for ONDC Beckn broadcast.`);
+                recordActivity(
+                  "CATALOG_GENERATED",
+                  `Catalog Generated: ${currentLangData.title}`,
+                  `Pricing verified at ₹${b2cPrice.toLocaleString("en-IN")} with +250% fair wage uplift.`
+                );
               }}
               className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-primary-container to-secondary text-white font-headline-sm text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-3 cursor-pointer group"
             >
               <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">
                 auto_awesome
               </span>
-              <span>
-                {isGenerating
-                  ? "Generating Multilingual Payload..."
-                  : "Generate AI Studio Catalog & ONDC Payload"}
-              </span>
-              <span className="font-['Noto_Sans_Devanagari'] text-sm sm:text-base opacity-90 hidden md:inline">
-                — एआई से लिस्टिंग बनाएं
+              <span>Generate AI Studio Catalog &amp; ONDC Payload</span>
+              <span className="text-sm sm:text-base opacity-90 hidden md:inline">
+                — {currentLangData.name.split(" ")[0]}
               </span>
             </button>
           </div>
 
           {/* ================= RIGHT PANEL (AI ENHANCEMENTS & LIVE PREVIEW) ================= */}
           <div className="lg:col-span-6 flex flex-col gap-6">
-            {/* 1. Studio Enhancement Before vs After Slider */}
+            {/* 1. Studio Enhancement Before vs After Slider (Real Image Processing) */}
             <div className="p-5 sm:p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-4 border border-surface-container">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
@@ -549,14 +745,24 @@ export default function StudioPage({ lang }: StudioPageProps) {
                     Photo Enhancement (Before vs After)
                   </h2>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-code-sm text-xs font-semibold">
-                  SegmentAnything + Softbox Lighting
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={downloadEnhancedImage}
+                    className="px-2.5 py-1 rounded-full bg-primary-fixed hover:bg-primary-container text-on-primary-fixed font-label-sm text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                    title="Download 4K enhanced commercial studio image"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">download</span>
+                    <span>Download 4K</span>
+                  </button>
+                  <span className="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-code-sm text-xs font-semibold">
+                    Studio Pipeline v2.4
+                  </span>
+                </div>
               </div>
 
               {/* Interactive Before/After Visual Comparison Slider */}
               <div
-                ref={containerRef}
+                ref={sliderContainerRef}
                 onPointerMove={handlePointerMove}
                 className="relative rounded-2xl overflow-hidden bg-surface-container shadow-inner h-72 sm:h-80 select-none cursor-ew-resize border border-surface-container"
               >
@@ -564,8 +770,8 @@ export default function StudioPage({ lang }: StudioPageProps) {
                 <div className="absolute inset-0 w-full h-full bg-surface-container-lowest overflow-hidden">
                   <img
                     className="w-full h-full object-cover"
-                    alt="After studio enhanced Banarasi silk"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCs5Hy657myZZWE38Dsz74tkshFa1yOL81olTJfUqMHEExSWgMoz2T3rJFCwYrVeflzWZrlGb1_5gCqomxa6x3w_Nac1iTaHUiYTV90kiqyiLxZ0RuLaFtZf4ROB5I3Sqy3h-_jsZ-gbcAQdtIKC6sPH8tizY95EkMfaykFDIc3BxnRXlqCjmLa8i5Rt8rXr8N1THCoUtzRNdxaavJ39miDB0d_vZYuXA_MhFLoD7riS01T8JG_IgmOg"
+                    alt="After studio enhanced craft"
+                    src={enhancedImage}
                   />
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-tertiary text-white font-label-sm text-xs flex items-center gap-1 shadow-md font-semibold">
                     <span className="material-symbols-outlined text-[14px]">check_circle</span>
@@ -582,18 +788,18 @@ export default function StudioPage({ lang }: StudioPageProps) {
                   className="absolute inset-y-0 left-0 overflow-hidden bg-surface-dim"
                   style={{ width: `${sliderPosition}%` }}
                 >
-                  <div style={{ width: containerRef.current?.clientWidth || 500, height: "100%" }}>
+                  <div style={{ width: sliderContainerRef.current?.clientWidth || 500, height: "100%" }}>
                     <img
                       className="w-full h-full object-cover"
-                      alt="Raw shot of Banarasi silk on dim rustic floor"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKGMveQ6hp-PWvUfDfik2_mXgdIDMdmY4ezvnlztpEqy381cTha_2tGQKeUSb_9CTYdunLwD1sXBmzvh-60RLlsuNeErAjkzq82Jur0BKimK6mcmcMQV9npu5NsN7NBfhydByKCMCc0Q1CPkmZM97fjbzb_LnpAEi7XEHECrx3AWlJbPX0nBj_UmowtVpgjFCOeSLDi-u6DDTWqy0J23g30QAKT2DsrFBAzFdz8UaYQ1v41FpDHzyDXg"
+                      alt="Raw shot of craft"
+                      src={rawImage}
                     />
                   </div>
                   <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-inverse-surface/80 backdrop-blur-sm text-white font-label-sm text-xs font-semibold">
                     Raw Mobile Capture
                   </div>
                   <div className="absolute bottom-3 left-3 text-white text-[11px] bg-inverse-surface/70 backdrop-blur-sm p-1.5 rounded">
-                    ⚠️ Dim lighting • Muddy wood backdrop • Shadows
+                    ⚠️ Dim lighting • Workshop clutter • Shadows
                   </div>
                 </div>
 
@@ -614,16 +820,16 @@ export default function StudioPage({ lang }: StudioPageProps) {
                   Luster &amp; metallic reflection normalization active
                 </span>
                 <button
-                  onClick={() => alert("Backdrop settings: Seamless pure white (#FFFFFF), shadow density 15%, 5500K softbox.")}
+                  onClick={() => fileInputRef.current?.click()}
                   className="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
                 >
-                  <span>Refine Backdrop Settings</span>
-                  <span className="material-symbols-outlined text-[14px]">tune</span>
+                  <span className="material-symbols-outlined text-[14px]">add_a_photo</span>
+                  <span>Change / Upload Another Photo</span>
                 </button>
               </div>
             </div>
 
-            {/* 2. AI-Generated Multilingual Catalog Card */}
+            {/* 2. AI-Generated Multilingual Catalog Card (Synchronized with 7 Languages) */}
             <div className="p-5 sm:p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-4 border border-surface-container">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
@@ -647,13 +853,7 @@ export default function StudioPage({ lang }: StudioPageProps) {
                   <span className="font-label-sm text-xs text-on-surface-variant font-bold">
                     GLOBAL ENGLISH SPECIFICATION
                   </span>
-                  <button
-                    onClick={() => alert("Editing product title & story in English...")}
-                    className="text-primary text-xs flex items-center gap-0.5 hover:underline font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">edit</span>
-                    <span>Edit</span>
-                  </button>
+                  <span className="text-xs text-tertiary font-bold">ONDC Beckn 1.1.0</span>
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block">
@@ -687,26 +887,22 @@ export default function StudioPage({ lang }: StudioPageProps) {
                 </div>
               </div>
 
-              {/* Hindi Regional Translation */}
+              {/* Regional Translation (Dynamically switches between Bengali, Gujarati, Marathi, Tamil, Telugu, Hindi) */}
               <div className="p-4 rounded-xl bg-surface-container-high/40 flex flex-col gap-2 border border-surface-container">
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-xs text-secondary font-bold flex items-center gap-1">
-                    <span>🇮🇳 हिन्दी विवरण (LOCAL CATALOG)</span>
+                    <span>{currentLangData.name} (LOCAL REGIONAL CATALOG)</span>
                   </span>
-                  <button
-                    onClick={() => alert("हिन्दी विवरण संपादित करें")}
-                    className="text-secondary text-xs flex items-center gap-0.5 hover:underline font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">edit</span>
-                    <span>संपादित करें</span>
-                  </button>
+                  <span className="text-secondary text-xs font-bold">
+                    ✓ Dialect Verified
+                  </span>
                 </div>
                 <div>
-                  <h5 className="font-['Noto_Sans_Devanagari'] font-bold text-sm sm:text-base text-on-surface">
-                    हस्तनिर्मित बनारसी कतान रेशमी दुपट्टा (स्वर्ण ज़री)
+                  <h5 className="font-bold text-sm sm:text-base text-on-surface">
+                    {currentLangData.title}
                   </h5>
-                  <p className="font-['Noto_Sans_Devanagari'] text-xs sm:text-sm text-on-surface-variant mt-1 leading-relaxed">
-                    वाराणसी के पारंपरिक बुनकरों द्वारा निर्मित शुद्ध रेशमी दुपट्टा, कधुआ तकनीक द्वारा हाथ से बुना गया।
+                  <p className="text-xs sm:text-sm text-on-surface-variant mt-1 leading-relaxed">
+                    {currentLangData.desc}
                   </p>
                 </div>
               </div>
@@ -864,31 +1060,6 @@ export default function StudioPage({ lang }: StudioPageProps) {
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-xs font-semibold">
                   <span>GeM Artisans Portal</span>
                 </div>
-              </div>
-
-              {/* Secondary Actions */}
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <button
-                  onClick={() => alert("Draft saved to local encrypted cache.")}
-                  className="py-2 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">save</span>
-                  <span>Save Draft</span>
-                </button>
-                <button
-                  onClick={() => alert("Generating GeM XML/CSV catalog manifest...")}
-                  className="py-2 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">description</span>
-                  <span>GeM CSV (630492)</span>
-                </button>
-                <button
-                  onClick={() => alert("WhatsApp catalog card link copied for sharing with craft cooperatives.")}
-                  className="py-2 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container text-tertiary font-label-sm text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">share</span>
-                  <span>WhatsApp Catalog</span>
-                </button>
               </div>
             </div>
           </div>

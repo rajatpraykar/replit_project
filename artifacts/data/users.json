@@ -1,0 +1,72 @@
+[
+  {
+    "id": "artisan_demo_01",
+    "name": "Radha Devi",
+    "phone": "+91 98765 43210",
+    "state": "Uttar Pradesh",
+    "district": "Varanasi",
+    "craftCluster": "Varanasi Handloom & Banarasi Silk",
+    "socialCategory": "SC Category • Master Weaver",
+    "udyamNumber": "UDYAM-UP-14-0028911",
+    "pehchanId": "KST-UP-2024-00142",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Social Justice & Empowerment Cluster Cell",
+    "createdAt": "2024-06-01T10:00:00.000Z"
+  },
+  {
+    "id": "artisan_demo_02",
+    "name": "Rameshwar Prasad",
+    "phone": "+91 98765 43211",
+    "state": "Uttar Pradesh",
+    "district": "Gorakhpur",
+    "craftCluster": "Gorakhpur Terracotta & Earthen Pottery",
+    "socialCategory": "OBC Traditional Artisan",
+    "udyamNumber": "UDYAM-UP-18-0094123",
+    "pehchanId": "KST-UP-2024-00189",
+    "aadhaarVerified": true,
+    "verifiedBy": "National Craft Board",
+    "createdAt": "2024-06-05T12:30:00.000Z"
+  },
+  {
+    "id": "artisan_demo_03",
+    "name": "Sunita Devi",
+    "phone": "+91 98765 43212",
+    "state": "Bihar",
+    "district": "Madhubani",
+    "craftCluster": "Mithila Painting & Natural Pigments",
+    "socialCategory": "Women Self-Help Group (SHG)",
+    "udyamNumber": "UDYAM-BR-08-0033190",
+    "pehchanId": "KST-BR-2024-00215",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Textiles",
+    "createdAt": "2024-06-10T14:15:00.000Z"
+  },
+  {
+    "id": "artisan_1788989271674",
+    "name": "Priya Das",
+    "phone": "+91 98765 43219",
+    "state": "West Bengal",
+    "district": "Bishnupur",
+    "craftCluster": "Bishnupur Terracotta & Baluchari",
+    "socialCategory": "Women Artisan Self Help Group",
+    "udyamNumber": "UDYAM-WE-24-4543700",
+    "pehchanId": "KST-WE-2024-4046",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Social Justice & Empowerment (MoSJE)",
+    "createdAt": "2026-09-09T21:27:51.674Z"
+  },
+  {
+    "id": "artisan_1788989459239",
+    "name": "Meera Ben Patel",
+    "phone": "+91 98765 43220",
+    "state": "Gujarat",
+    "district": "Kutch",
+    "craftCluster": "Ajrakhpur Block Print & Bandhani",
+    "socialCategory": "Artisan Self Help Group",
+    "udyamNumber": "UDYAM-GU-24-4842359",
+    "pehchanId": "KST-GU-2024-3403",
+    "aadhaarVerified": true,
+    "verifiedBy": "Ministry of Social Justice & Empowerment (MoSJE)",
+    "createdAt": "2026-09-09T21:30:59.239Z"
+  }
+]
